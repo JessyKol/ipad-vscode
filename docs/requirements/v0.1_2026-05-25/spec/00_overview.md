@@ -1,44 +1,44 @@
-# v0.1 Spec — 00: System Overview & Architecture
+# v0.1 规格说明 — 00：系统概述与架构
 
-| Field | Value |
+| 字段 | 内容 |
 |---|---|
-| Version | 0.1 |
-| Date | 2026-05-25 |
-| Status | Implemented |
+| 版本 | 0.1 |
+| 日期 | 2026-05-25 |
+| 状态 | 已实现 |
 
 ---
 
-## 1. Architecture Style
+## 1. 架构风格
 
-Single-page React Native application with:
-- **Flat component tree**: no deep nesting; screens are composed from panels
-- **Centralised state**: Zustand store as single source of truth
-- **Service layer**: pure functions, no class instances (except where library requires)
-- **WebView bridge**: Monaco editor runs in a sandboxed WebView; communication is JSON postMessage
+单页 React Native 应用，具备以下特点：
+- **扁平组件树**：无深层嵌套；页面由面板组合而成
+- **集中式状态**：Zustand 存储作为唯一数据来源
+- **服务层**：纯函数，无类实例（库有要求时除外）
+- **WebView 桥接**：Monaco 编辑器运行在沙盒 WebView 中；通信使用 JSON postMessage
 
 ```
-User Input (touch / hardware keyboard)
+用户输入（触摸 / 硬件键盘）
         │
         ▼
-React Native Components (Zustand reads)
+React Native 组件（读取 Zustand）
         │
-        ├─── WebView (Monaco)
+        ├─── WebView（Monaco）
         │         ↕ postMessage
         │
-        ├─── Service Layer (fileSystem, git, github)
+        ├─── 服务层（fileSystem、git、github）
         │         │
         │         ▼
-        │    expo-file-system (device storage)
+        │    expo-file-system（设备存储）
         │         │
         │         ▼
-        │    Documents/workspaces/ (git repos)
+        │    Documents/workspaces/（Git 仓库）
         │
-        └─── Zustand Store (state mutations)
+        └─── Zustand 存储（状态变更）
 ```
 
 ---
 
-## 2. Module Dependency Graph
+## 2. 模块依赖关系图
 
 ```
 app/index.tsx
@@ -52,12 +52,12 @@ app/index.tsx
 
 EditorScreen
   ├── EditorTabs               → editorStore
-  ├── MonacoEditor             → monacoHtml.ts (WebView)
+  ├── MonacoEditor             → monacoHtml.ts（WebView）
   └── StatusBar                → editorStore
 
 TerminalView                   → git.ts, fileSystem.ts, editorStore
 
-editorStore (Zustand)          ← all components read/write
+editorStore（Zustand）         ← 所有组件读写
 
 git.ts                         → fsAdapter.ts → expo-file-system
 fileSystem.ts                  → expo-file-system
@@ -66,36 +66,36 @@ github.ts                      → @octokit/rest → HTTPS
 
 ---
 
-## 3. Technology Stack Rationale
+## 3. 技术栈选型理由
 
 ### React Native + Expo
-- **Why Expo SDK:** Managed workflow means no Xcode for most dev work; expo-file-system and expo-router are battle-tested
-- **Why not bare RN:** Unnecessary complexity for this feature set at v0.1
-- **Risk:** Expo SDK upgrades may break native modules; mitigated by pinning versions
+- **选择 Expo SDK 的原因：** 托管工作流意味着大多数开发工作无需 Xcode；expo-file-system 和 expo-router 经过充分验证
+- **不选裸 RN 的原因：** v0.1 功能集不需要额外的复杂度
+- **风险：** Expo SDK 升级可能破坏原生模块；通过固定版本来缓解
 
-### Monaco Editor via WebView
-- Monaco has no React Native port (it requires a DOM)
-- WebView provides a full browser environment
-- Inline HTML approach (`source={{ html: '...' }}`) is cross-platform; `file:///android_asset/` is Android-only
-- postMessage latency measured at < 30ms on M-series iPad
+### Monaco 编辑器（通过 WebView）
+- Monaco 没有 React Native 移植版（需要 DOM 环境）
+- WebView 提供完整的浏览器环境
+- 内联 HTML 方案（`source={{ html: '...' }}`）跨平台兼容；`file:///android_asset/` 仅限 Android
+- postMessage 延迟在 M 系列 iPad 上实测 < 30ms
 
 ### isomorphic-git
-- Pure JavaScript git implementation; no native module needed
-- Works in React Native / Expo managed workflow
-- HTTP transport only (no SSH); acceptable for v0.1 (GitHub HTTPS + PAT)
-- Performance: `statusMatrix` on 1000-file repo takes ~800ms; acceptable
+- 纯 JavaScript Git 实现；无需原生模块
+- 可在 React Native / Expo 托管工作流中运行
+- 仅支持 HTTP 传输（无 SSH）；v0.1 可接受（GitHub HTTPS + PAT）
+- 性能：1000 个文件的仓库 `statusMatrix` 约需 800ms；可接受
 
 ### Zustand
-- Minimal boilerplate vs Redux
-- No Provider wrapping required (hooks-first)
-- Sufficient for current store size (~15 state fields)
+- 相比 Redux 样板代码更少
+- 无需 Provider 包裹（Hook 优先）
+- 对当前存储规模（约 15 个状态字段）已足够
 
 ---
 
-## 4. Data Flow: Opening a File
+## 4. 数据流：打开文件
 
 ```
-User taps file in FileTreeView
+用户在 FileTreeView 中点击文件
         │
         ▼
 FileItem.handlePress()
@@ -108,36 +108,36 @@ openTab({ path, name, content, language, isDirty: false })
         │
         ▼
 editorStore.openTab()
-  → tabs[] updated, activeTabId set
+  → tabs[] 更新，activeTabId 设置
         │
         ▼
-EditorScreen re-renders
-  → MonacoEditor receives new tabId, content, language
+EditorScreen 重新渲染
+  → MonacoEditor 接收新的 tabId、content、language
         │
         ▼
 MonacoEditor.useEffect([tabId])
   → postMessage({ type: 'init', value, language, theme, fontSize })
         │
         ▼
-Monaco WebView receives message
+Monaco WebView 收到消息
   → editor.setValue(value)
   → setModelLanguage(language)
 ```
 
 ---
 
-## 5. Data Flow: Saving a File
+## 5. 数据流：保存文件
 
 ```
-⌘S pressed (hardware keyboard on Monaco)
+⌘S 按下（Monaco 中的硬件键盘）
         │
         ▼
-Monaco: editor.addCommand(CtrlCmd|S) fires
+Monaco: editor.addCommand(CtrlCmd|S) 触发
   → window.ReactNativeWebView.postMessage({ type: 'save' })
         │
         ▼
-MonacoEditor.onMessage receives 'save'
-  → calls onSave prop
+MonacoEditor.onMessage 收到 'save'
+  → 调用 onSave prop
         │
         ▼
 EditorScreen.handleSave()
@@ -147,49 +147,49 @@ EditorScreen.handleSave()
 
 ---
 
-## 6. Data Flow: Git Commit
+## 6. 数据流：Git 提交
 
 ```
-User types commit message → taps "Commit"
+用户输入提交信息 → 点击"提交"
         │
         ▼
 GitPanel.handleCommit()
         │
-        ├── Validate: commitMsg, staged.length > 0, author set
+        ├── 验证：commitMsg、staged.length > 0、author 已设置
         │
         ▼
 git.commit(dir, message, { name, email })
         │
         ▼
 isomorphic-git.commit()
-  → reads .git/ via fsAdapter (expo-file-system)
-  → writes new commit object to .git/objects/
-  → updates .git/refs/heads/<branch>
+  → 通过 fsAdapter（expo-file-system）读取 .git/
+  → 向 .git/objects/ 写入新提交对象
+  → 更新 .git/refs/heads/<branch>
         │
         ▼
 getStatus(dir)  → setGitStatus(status)
 getCurrentBranch(dir) → setActiveBranch(branch)
         │
         ▼
-GitPanel re-renders (staged list now empty)
-StatusBar re-renders (branch name updated)
+GitPanel 重新渲染（已暂存列表清空）
+StatusBar 重新渲染（分支名更新）
 ```
 
 ---
 
-## 7. State Schema
+## 7. 状态数据结构
 
 ```typescript
 // src/store/editorStore.ts
 
 EditorStore {
-  // Editor tabs
+  // 编辑器标签
   tabs: EditorTab[]           // { id, path, name, content, isDirty, language }
   activeTabId: string | null
 
-  // File system
+  // 文件系统
   fileTree: FileNode[]        // { name, path, type, children?, gitStatus? }
-  currentWorkspace: string | null  // abs path
+  currentWorkspace: string | null  // 绝对路径
 
   // Git
   gitStatus: GitStatus        // { staged[], unstaged[], untracked[] }
@@ -199,29 +199,29 @@ EditorStore {
   sidebarPanel: 'files' | 'git' | 'search' | 'settings'
   sidebarVisible: boolean
 
-  // Editor settings
+  // 编辑器设置
   theme: 'vs-dark' | 'vs-light' | 'hc-black'
   fontSize: number            // 10-24
 
-  // Git settings
+  // Git 设置
   gitSettings: {
     authorName: string
     authorEmail: string
-    token: string             // GitHub PAT; in-memory only in v0.1
+    token: string             // GitHub PAT；v0.1 仅保存在内存中
   }
 }
 ```
 
 ---
 
-## 8. Key Invariants
+## 8. 核心不变量
 
-1. **Single FS:** All file operations MUST go through `expo-file-system`. `git.ts` uses `fsAdapter.ts` which wraps expo-file-system. LightningFS must NOT be used.
+1. **单一文件系统：** 所有文件操作必须通过 `expo-file-system` 执行。`git.ts` 使用 `fsAdapter.ts`（封装了 expo-file-system）。禁止使用 LightningFS。
 
-2. **Tab content is ground truth:** The editor's `content` in `EditorTab` reflects what's in Monaco. On save, this is written to disk. The two should never diverge for more than one autosave interval (v0.1 has no autosave — save is manual only).
+2. **标签内容是事实来源：** `EditorTab` 中的 `content` 反映 Monaco 中的内容。保存时写入磁盘。两者之间的差异不得超过一个自动保存间隔（v0.1 无自动保存——仅支持手动保存）。
 
-3. **Git status must be refreshed after mutations:** Any function that calls `stageFile`, `unstageFile`, `stageAll`, `commit`, `pull` MUST call `getStatus(dir)` and update the store.
+3. **变更后必须刷新 Git 状态：** 任何调用 `stageFile`、`unstageFile`、`stageAll`、`commit`、`pull` 的函数必须调用 `getStatus(dir)` 并更新存储。
 
-4. **Branch must be updated after checkout:** Any checkout/branch-create must call `getCurrentBranch` and update `activeBranch` in the store.
+4. **检出后必须更新分支：** 任何检出/创建分支操作必须调用 `getCurrentBranch` 并更新存储中的 `activeBranch`。
 
-5. **Token never logged:** The GitHub token must not appear in `console.log`, error messages shown to UI, or crash reports.
+5. **Token 不得记录：** GitHub Token 不得出现在 `console.log`、显示给用户的错误信息或崩溃报告中。

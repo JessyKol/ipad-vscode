@@ -1,26 +1,26 @@
-# Module Spec: Search
+# 模块规格说明：搜索
 
-| Module | Search |
+| 模块 | 搜索 |
 |---|---|
-| File | `src/components/Search/SearchPanel.tsx` |
-| Version | 0.1 |
+| 相关文件 | `src/components/Search/SearchPanel.tsx` |
+| 版本 | 0.1 |
 
 ---
 
-## Responsibility
+## 职责
 
-Full-text search across all text files in the current workspace. Display results grouped by file with line context. Navigate to result location in editor.
+对当前工作区内的所有文本文件进行全文搜索。按文件分组显示结果并附带行上下文。支持导航到结果所在的编辑器位置。
 
 ---
 
-## Search Algorithm
+## 搜索算法
 
-### Input
-- `query`: string (1+ characters)
-- `caseSensitive`: boolean (default false)
-- `fileTree`: `FileNode[]` from store (root-level nodes; children lazy-loaded)
+### 输入
+- `query`：字符串（1 个及以上字符）
+- `caseSensitive`：布尔值（默认 false）
+- `fileTree`：来自存储的 `FileNode[]`（根级节点；子目录懒加载）
 
-### Tree Traversal
+### 树遍历
 
 ```typescript
 async function searchInTree(nodes, query, caseSensitive, results, maxResults = 200) {
@@ -43,38 +43,38 @@ async function searchInTree(nodes, query, caseSensitive, results, maxResults = 2
 }
 ```
 
-**Limitation:** `node.children` is only populated if the directory was expanded in FileTreeView. If directories are unexpanded, their files won't be searched. **Fix:** The search should use its own recursive `readDirectory` traversal, not depend on the store's FileNode tree. This is a known bug fixed in the backlog.
+**限制：** `node.children` 仅在 FileTreeView 中展开了目录时才有值。如果目录未展开，其中的文件不会被搜索。**修复方案：** 搜索应使用自己的递归 `readDirectory` 遍历，而不依赖存储中的 FileNode 树。这是待办事项中已知的 bug。
 
-**v0.1 workaround:** Users must expand all directories in FileTreeView before searching, or accept incomplete results.
+**v0.1 临时方案：** 用户必须在搜索前在 FileTreeView 中展开所有目录，否则接受不完整的结果。
 
 ---
 
-## Result Data Model
+## 结果数据模型
 
 ```typescript
 type SearchResult = {
-  file: string;       // filename only (basename)
-  filePath: string;   // absolute path
-  line: number;       // 1-indexed
-  text: string;       // trimmed line text
-  matchStart: number; // index in (caseSensitive ? text : text.toLowerCase())
+  file: string;       // 仅文件名（basename）
+  filePath: string;   // 绝对路径
+  line: number;       // 1 开始的行号
+  text: string;       // 去除首尾空格的行文本
+  matchStart: number; // 在（区分/不区分大小写的）text 中的索引
   matchEnd: number;   // matchStart + query.length
 }
 ```
 
 ---
 
-## Result Cap
+## 结果上限
 
-Maximum 200 results are returned. If the cap is hit, a "(capped)" label is shown in the summary. This prevents:
-- Memory pressure from huge result sets
-- UI lag from rendering thousands of rows
+最多返回 200 条结果。达到上限时，摘要中显示"（已截断）"标签。这可以防止：
+- 大量结果集造成内存压力
+- 渲染数千行导致 UI 卡顿
 
 ---
 
-## Result Grouping
+## 结果分组
 
-Results are grouped by `filePath` using `reduce`:
+结果按 `filePath` 通过 `reduce` 分组：
 
 ```typescript
 const byFile = results.reduce<Record<string, SearchResult[]>>((acc, r) => {
@@ -83,47 +83,47 @@ const byFile = results.reduce<Record<string, SearchResult[]>>((acc, r) => {
 }, {});
 ```
 
-Each file group shows:
-- File header: filename + count badge
-- Per-result row: line number + trimmed line text
+每个文件组显示：
+- 文件头：文件名 + 数量徽标
+- 每条结果行：行号 + 去除首尾空格的行文本
 
 ---
 
-## Navigation
+## 导航
 
-Tapping a result:
-1. Reads file content via `readFile(filePath)`
-2. Calls `openTab({ path, name, content, language })` → opens/switches to tab
-3. TODO (backlog): post `revealLine` message to Monaco WebView to scroll to the result line
+点击结果时：
+1. 通过 `readFile(filePath)` 读取文件内容
+2. 调用 `openTab({ path, name, content, language })` → 打开/切换到标签
+3. 待办事项：向 Monaco WebView 发送 `revealLine` 消息以滚动到结果行
 
 ---
 
-## Performance
+## 性能
 
-| Scenario | Time |
+| 场景 | 耗时 |
 |---|---|
-| 50 files, ~5000 lines, simple query | ~500ms |
-| 200 files, ~20000 lines, simple query | ~2-3s |
-| 1000 files (large repo) | ~10-15s (unacceptable) |
+| 50 个文件，~5000 行，简单查询 | ~500ms |
+| 200 个文件，~20000 行，简单查询 | ~2-3s |
+| 1000 个文件（大型仓库） | ~10-15s（不可接受） |
 
-**Backlog:** Use a web worker or background task to parallelize file reads. Or build an in-memory index on workspace open. For v0.1, 50-100 file projects are the primary target.
-
----
-
-## Abort / Debounce
-
-The current implementation does NOT debounce search — it triggers on "Search" button press, not on typing. This is intentional for v0.1 to avoid triggering on every keystroke.
-
-The `abortRef` mechanism ensures that if a new search starts before the old one finishes, the old one's results don't overwrite the new one's. However, in v0.1, since search is button-triggered, this is rarely needed.
+**待办事项：** 使用 Web Worker 或后台任务并行化文件读取，或在工作区打开时构建内存索引。v0.1 的主要目标是 50-100 个文件的项目。
 
 ---
 
-## Known Limitations (v0.1)
+## 中止/防抖
 
-1. **Depends on expanded FileTree** — only searches files whose parent directories were expanded. Use own recursive readDirectory in the backlog.
-2. **First match per line only** — multiple matches on the same line show only the first one.
-3. **No regex support** — plain string search only. Regex backlog.
-4. **No replace** — read-only search. Replace backlog.
-5. **No glob include/exclude** — all text files are searched. Filter patterns backlog.
-6. **No highlighted match in result text** — match position tracked but not highlighted in the UI row. Add styled text highlight in the backlog.
-7. **No "reveal line" after navigate** — file opens but Monaco doesn't scroll to the result line. Fix in the backlog via `postMessage({ type: 'revealLine', line })`.
+当前实现**不进行防抖**——搜索在点击"搜索"按钮时触发，而非每次输入时触发。这是 v0.1 有意为之，避免每次按键都触发搜索。
+
+`abortRef` 机制确保：如果新搜索在旧搜索完成前启动，旧搜索的结果不会覆盖新搜索的结果。然而在 v0.1 中，由于搜索是按钮触发的，这种情况很少发生。
+
+---
+
+## 已知限制（v0.1）
+
+1. **依赖已展开的文件树** — 只搜索父目录已在 FileTreeView 中展开的文件。待办事项中使用独立的递归 readDirectory。
+2. **每行仅匹配第一个** — 同一行中有多个匹配时只显示第一个。
+3. **不支持正则表达式** — 仅纯字符串搜索。正则表达式列为待办事项。
+4. **不支持替换** — 只读搜索。替换功能列为待办事项。
+5. **不支持 glob 包含/排除** — 搜索所有文本文件。过滤模式列为待办事项。
+6. **结果文本中匹配无高亮** — 匹配位置已追踪但 UI 行中未高亮显示。待办事项中添加带样式的文本高亮。
+7. **导航后不跳转行** — 文件会打开，但 Monaco 不会滚动到结果行。待办事项中通过 `postMessage({ type: 'revealLine', line })` 修复。

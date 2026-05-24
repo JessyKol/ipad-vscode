@@ -1,15 +1,15 @@
-# Development Guide
+# 开发指南
 
-## Prerequisites
+## 环境依赖
 
-| Tool | Version | Purpose |
+| 工具 | 版本 | 用途 |
 |---|---|---|
-| Node.js | ≥ 18 LTS | JS runtime |
-| Expo CLI | `npx expo` | Dev server |
-| Xcode | ≥ 15 | iOS Simulator |
-| iOS Simulator | iPad Pro 12.9" | Primary test target |
+| Node.js | ≥ 18 LTS | JS 运行时 |
+| Expo CLI | `npx expo` | 开发服务器 |
+| Xcode | ≥ 15 | iOS 模拟器 |
+| iOS 模拟器 | iPad Pro 12.9" | 主要测试目标 |
 
-## Setup
+## 初始化设置
 
 ```bash
 git clone git@github.com:JessyKol/ipad-vscode.git
@@ -17,50 +17,50 @@ cd ipad-vscode
 npm install
 ```
 
-## Running
+## 运行项目
 
 ```bash
-# Start dev server
+# 启动开发服务器
 npm start
 
-# Open in iOS Simulator
-npm run ios          # → picks default simulator
+# 在 iOS 模拟器中打开
+npm run ios          # → 使用默认模拟器
 
-# Open on physical iPad via Expo Go (limited — WebView works)
-# Scan QR code from 'npm start'
+# 通过 Expo Go 在实体 iPad 上打开（有限制——WebView 可用）
+# 扫描 'npm start' 中的二维码
 ```
 
-> **Tip:** For the Monaco editor to load, the device/simulator must have internet access (CDN dependency). Offline support is planned for v0.3.
+> **提示：** Monaco 编辑器加载需要网络（CDN 依赖）。离线支持计划在 v0.3 中实现。
 
-## Type Checking
+## 类型检查
 
 ```bash
 npm run type-check
 ```
 
-## Project Scripts
+## 项目脚本
 
-| Script | Command |
+| 功能 | 命令 |
 |---|---|
-| Dev server | `npm start` |
-| iOS build | `npm run ios` |
-| Web preview | `npm run web` |
-| Type check | `npm run type-check` |
-| Lint | `npm run lint` |
-| Sync wiki | `bash scripts/push-wiki.sh` |
+| 开发服务器 | `npm start` |
+| iOS 构建 | `npm run ios` |
+| Web 预览 | `npm run web` |
+| 类型检查 | `npm run type-check` |
+| 代码检查 | `npm run lint` |
+| 同步 Wiki | `bash scripts/push-wiki.sh` |
 
-## Architecture Conventions
+## 架构规范
 
-### Adding a new sidebar panel
+### 添加新的侧边栏面板
 
-1. Add the panel ID to `SidebarPanel` type in `src/types/index.ts`
-2. Create component in `src/components/<PanelName>/`
-3. Register in `PANELS` array in `src/components/Sidebar/SidebarPanel.tsx`
-4. Render in the panel host `switch` block
+1. 在 `src/types/index.ts` 中将面板 ID 添加到 `SidebarPanel` 类型
+2. 在 `src/components/<PanelName>/` 中创建组件
+3. 在 `src/components/Sidebar/SidebarPanel.tsx` 的 `PANELS` 数组中注册
+4. 在面板容器的 `switch` 代码块中渲染
 
-### Adding Monaco commands
+### 添加 Monaco 命令
 
-In `src/assets/monacoHtml.ts`, inside the `require(['vs/editor/editor.main'], function() {...})` callback:
+在 `src/assets/monacoHtml.ts` 中，在 `require(['vs/editor/editor.main'], function() {...})` 回调内部：
 
 ```js
 editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyX, function() {
@@ -68,47 +68,47 @@ editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyX, function() {
 });
 ```
 
-Then handle `msg.type === 'myEvent'` in `MonacoEditor.tsx`'s `onMessage`.
+然后在 `MonacoEditor.tsx` 的 `onMessage` 中处理 `msg.type === 'myEvent'`。
 
-### Adding git operations
+### 添加 Git 操作
 
-1. Add the function to `src/services/git.ts` — all operations take `dir` (workspace path) as first arg and use the `expoFs` adapter
-2. Call from the Git panel or terminal
-3. Update git status in store after mutations: `setGitStatus(await getStatus(dir))`
+1. 在 `src/services/git.ts` 中添加函数——所有操作以 `dir`（工作区路径）为第一个参数，并使用 `expoFs` 适配器
+2. 从 Git 面板或终端调用
+3. 变更后更新存储中的 Git 状态：`setGitStatus(await getStatus(dir))`
 
-### State changes
+### 状态变更
 
-All reads/writes go through `useEditorStore`. Avoid local component state for data that other components need. Add new fields + actions to `src/store/editorStore.ts`.
+所有读写通过 `useEditorStore` 进行。避免对其他组件也需要的数据使用本地组件状态。在 `src/store/editorStore.ts` 中添加新字段和操作。
 
-## Testing on Physical iPad
+## 在实体 iPad 上测试
 
-1. Build a development client: `npx expo run:ios --device`
-2. Or use [Expo Dev Client](https://docs.expo.dev/develop/development-builds/introduction/)
+1. 构建开发客户端：`npx expo run:ios --device`
+2. 或使用 [Expo Dev Client](https://docs.expo.dev/develop/development-builds/introduction/)
 
-Key things to test manually:
-- Monaco editor loads (requires network)
-- `⌘S` saves (requires hardware keyboard attached to iPad)
-- Git operations require a workspace with `.git/` initialised
-- Push/pull require GitHub token set in Settings
+需要手动测试的关键功能：
+- Monaco 编辑器加载（需要网络）
+- `⌘S` 保存（需要连接硬件键盘）
+- Git 操作需要已初始化 `.git/` 的工作区
+- 推送/拉取需要在设置中配置 GitHub Token
 
-## Common Issues
+## 常见问题
 
-| Symptom | Cause | Fix |
+| 现象 | 原因 | 解决方案 |
 |---|---|---|
-| Monaco shows "Loading editor…" forever | No network, CDN blocked | Connect to internet |
-| Git status empty / wrong | Workspace not in git | Tap Settings → Init Repository |
-| Push fails "auth required" | No token set | Settings → GitHub Token |
-| Commit fails "author required" | No author set | Settings → Git Author |
-| File changes not reflected in git | FS mismatch (old code) | Ensure using `expoFs` in git.ts |
+| Monaco 一直显示"加载编辑器…" | 无网络，CDN 被屏蔽 | 连接互联网 |
+| Git 状态为空/不正确 | 工作区未初始化 Git | 点击设置 → 初始化仓库 |
+| 推送失败"需要鉴权" | 未设置 Token | 设置 → GitHub Token |
+| 提交失败"需要作者信息" | 未设置作者信息 | 设置 → Git 作者 |
+| 文件更改未反映在 Git 中 | 文件系统不匹配（旧代码） | 确保 git.ts 中使用 `expoFs` |
 
-## Release Checklist
+## 发布检查清单
 
-- [ ] `npm run type-check` passes
-- [ ] Tested on iPad Simulator (12.9" and 11")
-- [ ] Monaco loads and saves correctly
-- [ ] Git: status, stage, commit, push, pull all work
-- [ ] Search returns correct results
-- [ ] Quick Open lists files correctly
-- [ ] Keyboard shortcuts respond (⌘S, ⌘P, ⌘B, ⌘`)
-- [ ] Update `docs/requirements/` with any spec changes
-- [ ] Push `docs/wiki/` to GitHub Wiki via `scripts/push-wiki.sh`
+- [ ] `npm run type-check` 通过
+- [ ] 在 iPad 模拟器上测试（12.9" 和 11"）
+- [ ] Monaco 加载和保存正常
+- [ ] Git：状态、暂存、提交、推送、拉取均可用
+- [ ] 搜索返回正确结果
+- [ ] 快速打开正确列出文件
+- [ ] 键盘快捷键响应正常（⌘S、⌘P、⌘B、⌘\`）
+- [ ] 更新 `docs/requirements/` 中的相关规格变更
+- [ ] 通过 `scripts/push-wiki.sh` 将 `docs/wiki/` 推送到 GitHub Wiki
