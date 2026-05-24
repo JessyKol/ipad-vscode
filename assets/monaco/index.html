@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Monaco Editor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #container { width: 100%; height: 100%; overflow: hidden; background: #1e1e1e; }
+    .loading { display: flex; align-items: center; justify-content: center; height: 100%;
+      color: #858585; font-family: -apple-system, sans-serif; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div id="container"><div class="loading">Loading editor...</div></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <script>
+    var editor = null;
+    var pendingValue = null;
+    var pendingOptions = null;
+
+    require.config({
+      paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }
+    });
+
+    require(['vs/editor/editor.main'], function () {
+      monaco.editor.defineTheme('vscode-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [],
+        colors: {
+          'editor.background': '#1e1e1e',
+          'editorLineNumber.foreground': '#858585',
+          'editorLineNumber.activeForeground': '#c6c6c6',
+        }
+      });
+
+      editor = monaco.editor.create(document.getElementById('container'), {
+        value: pendingValue || '',
+        language: 'plaintext',
+        theme: pendingOptions?.theme || 'vscode-dark',
+        fontSize: pendingOptions?.fontSize || 14,
+        fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+        lineNumbers: 'on',
+        minimap: { enabled: true },
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        wordWrap: 'off',
+        tabSize: 2,
+        insertSpaces: true,
+        renderWhitespace: 'selection',
+        cursorBlinking: 'blink',
+        smoothScrolling: true,
+        contextmenu: true,
+        mouseWheelZoom: true,
+        formatOnPaste: true,
+        formatOnType: false,
+        suggestOnTriggerCharacters: true,
+        quickSuggestions: true,
+        bracketPairColorization: { enabled: true },
+        guides: { bracketPairs: true, indentation: true },
+      });
+
+      editor.onDidChangeModelContent(function () {
+        var value = editor.getValue();
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: 'change', value: value })
+        );
+      });
+
+      editor.onDidChangeCursorPosition(function (e) {
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'cursor',
+            line: e.position.lineNumber,
+            column: e.position.column,
+          })
+        );
+      });
+
+      window.ReactNativeWebView && window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: 'ready' })
+      );
+    });
+
+    window.addEventListener('message', function (event) {
+      try {
+        var msg = JSON.parse(event.data);
+        handleMessage(msg);
+      } catch (e) {}
+    });
+
+    document.addEventListener('message', function (event) {
+      try {
+        var msg = JSON.parse(event.data);
+        handleMessage(msg);
+      } catch (e) {}
+    });
+
+    function handleMessage(msg) {
+      if (!editor) {
+        if (msg.type === 'setValue') pendingValue = msg.value;
+        if (msg.type === 'init') pendingOptions = msg.options;
+        return;
+      }
+      switch (msg.type) {
+        case 'setValue':
+          if (editor.getValue() !== msg.value) {
+            editor.setValue(msg.value);
+          }
+          break;
+        case 'setLanguage':
+          monaco.editor.setModelLanguage(editor.getModel(), msg.language);
+          break;
+        case 'setTheme':
+          monaco.editor.setTheme(msg.theme);
+          break;
+        case 'setFontSize':
+          editor.updateOptions({ fontSize: msg.size });
+          break;
+        case 'format':
+          editor.getAction('editor.action.formatDocument').run();
+          break;
+        case 'find':
+          editor.getAction('actions.find').run();
+          break;
+        case 'undo':
+          editor.trigger('keyboard', 'undo', null);
+          break;
+        case 'redo':
+          editor.trigger('keyboard', 'redo', null);
+          break;
+        case 'focus':
+          editor.focus();
+          break;
+        case 'init':
+          if (msg.options) {
+            editor.updateOptions({
+              theme: msg.options.theme || 'vscode-dark',
+              fontSize: msg.options.fontSize || 14,
+            });
+          }
+          if (msg.value !== undefined) editor.setValue(msg.value);
+          if (msg.language) monaco.editor.setModelLanguage(editor.getModel(), msg.language);
+          break;
+      }
+    }
+  </script>
+</body>
+</html>
