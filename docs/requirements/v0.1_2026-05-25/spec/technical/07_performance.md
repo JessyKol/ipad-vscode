@@ -1,120 +1,120 @@
-# Technical Spec: Performance
+# 技术规格说明：性能
 
-| Document | Performance |
+| 文档 | 性能 |
 |---|---|
-| Version | 0.1 |
-| Date | 2026-05-25 |
+| 版本 | 0.1 |
+| 日期 | 2026-05-25 |
 
 ---
 
-## Performance Targets (v0.1)
+## 性能目标（v0.1）
 
-| Metric | Target | Measurement Method |
+| 指标 | 目标值 | 测量方法 |
 |---|---|---|
-| Cold start → usable UI | < 3s | Time from app launch to first frame rendered |
-| Monaco editor load | < 5s | Time from tab open to editor interactive |
-| File open (≤ 500KB) | < 300ms | Time from tap to editor showing content |
-| Git status (1000 files) | < 2s | `getStatus()` execution time |
-| Git commit | < 1s | Excluding network |
-| Git push (small commit) | < 5s | Network dependent |
-| Search (100 files, 10K lines) | < 3s | Time from button press to results |
-| Directory listing (50 entries) | < 200ms | `readDirectory()` time |
+| 冷启动到可用 UI | < 3s | 从应用启动到第一帧渲染的时间 |
+| Monaco 编辑器加载 | < 5s | 从打开标签到编辑器可交互的时间 |
+| 打开文件（≤ 500KB） | < 300ms | 从点击到编辑器显示内容的时间 |
+| Git 状态（1000 个文件） | < 2s | `getStatus()` 执行时间 |
+| Git 提交 | < 1s | 不含网络时间 |
+| Git 推送（小提交） | < 5s | 依赖网络 |
+| 搜索（100 个文件，10K 行） | < 3s | 从按下按钮到显示结果的时间 |
+| 目录列举（50 个条目） | < 200ms | `readDirectory()` 耗时 |
 
 ---
 
-## Known Bottlenecks
+## 已知性能瓶颈
 
-### 1. Monaco CDN Load (~2-4s)
+### 1. Monaco CDN 加载（约 2-4s）
 
-**Cause:** Monaco loads its JS (~3MB gzipped) from cdnjs.cloudflare.com on every new tab.
+**原因：** Monaco 每次新建标签时从 cdnjs.cloudflare.com 加载 JS（约 3MB gzip 压缩）。
 
-**Mitigation in v0.1:** None. Acceptable because iPad Pro on WiFi can load CDN assets quickly.
+**v0.1 缓解措施：** 无。可接受，因为 iPad Pro 在 WiFi 下加载 CDN 资源较快。
 
-**Backlog:** Bundle Monaco locally as a pre-bundled asset or use a local HTTP server.
+**待办事项：** 将 Monaco 作为预打包资源本地捆绑，或使用本地 HTTP 服务器。
 
-**Measurement:** Open new tab with `Date.now()` before mount and in `onMessage` handler for `ready` event.
-
----
-
-### 2. expo-file-system `getInfoAsync` per file (~2ms per call)
-
-**Cause:** `readDirectory` calls `getInfoAsync` once per entry to determine if it's a file or directory. For a 500-file directory, this is 500 sequential async calls.
-
-**Observed time:** ~1s for 500 files, ~5s for 2000 files.
-
-**Mitigation in v0.1:** Lazy-loading in FileTreeView (only loads expanded directories). The full tree is never loaded at once.
-
-**Backlog:** Batch `getInfoAsync` calls using `Promise.all` (parallelise up to 50 at a time).
+**测量方法：** 在挂载前和 `onMessage` 处理 `ready` 事件时各记录 `Date.now()`。
 
 ---
 
-### 3. isomorphic-git `statusMatrix` (~500-800ms for 1000-file repo)
+### 2. expo-file-system `getInfoAsync` 每文件调用（约 2ms/次）
 
-**Cause:** isomorphic-git reads every tracked file's metadata to compute status. This is inherently O(n) in repo size.
+**原因：** `readDirectory` 为每个条目调用一次 `getInfoAsync` 以判断是文件还是目录。500 个文件的目录需要 500 次顺序异步调用。
 
-**Mitigation in v0.1:** `getStatus()` is only called on explicit user actions (refresh button, after git mutations). No background polling.
+**实测耗时：** 500 个文件约 1s，2000 个文件约 5s。
 
-**Backlog:** Cache status; only re-compute on file system change events (when expo-file-system exposes them).
+**v0.1 缓解措施：** FileTreeView 中懒加载（仅加载已展开的目录），从不一次性加载完整树。
 
----
-
-### 4. Search traverse (~10-50ms per file)
-
-**Cause:** Reading each file + string search. Sequential awaits.
-
-**Mitigation in v0.1:** 200-result cap prevents processing entire large repos.
-
-**Backlog:** Parallel file reads with `Promise.all`, build in-memory index.
+**待办事项：** 使用 `Promise.all` 批量调用 `getInfoAsync`（每批最多 50 个并行）。
 
 ---
 
-### 5. postMessage latency (~10-30ms per message)
+### 3. isomorphic-git `statusMatrix`（1000 个文件约 500-800ms）
 
-**Cause:** WebView bridge serialisation + deserialization overhead.
+**原因：** isomorphic-git 读取每个被追踪文件的元数据来计算状态，本质上是 O(n) 复杂度。
 
-**Mitigation in v0.1:** Content sync fires on every keystroke. For typical typing speed (< 10 chars/second), this is acceptable.
+**v0.1 缓解措施：** `getStatus()` 仅在用户明确操作时调用（刷新按钮、Git 变更后）。无后台轮询。
 
-**Backlog:** Debounce `onDidChangeModelContent` with a 100ms debounce before syncing to React Native state. (Saves are still instant via ⌘S.)
+**待办事项：** 缓存状态；仅在文件系统变更事件时重新计算（待 expo-file-system 暴露相关事件）。
 
 ---
 
-## Memory Budget
+### 4. 搜索遍历（每文件约 10-50ms）
 
-iPad Pro M-series has 8-16GB RAM, but iOS kills background apps aggressively. App should stay under 200MB active memory.
+**原因：** 读取每个文件 + 字符串搜索，顺序 await 执行。
 
-| Component | Estimated Memory |
+**v0.1 缓解措施：** 200 条结果上限，防止处理整个大型仓库。
+
+**待办事项：** 使用 `Promise.all` 并行读取文件，构建内存索引。
+
+---
+
+### 5. postMessage 延迟（每条消息约 10-30ms）
+
+**原因：** WebView 桥接的序列化 + 反序列化开销。
+
+**v0.1 缓解措施：** 内容同步在每次按键时触发。对于典型输入速度（< 10 字符/秒），可接受。
+
+**待办事项：** 对 `onDidChangeModelContent` 添加 100ms 防抖后再同步到 React Native 状态。（保存操作仍通过 ⌘S 立即触发。）
+
+---
+
+## 内存预算
+
+iPad Pro M 系列有 8-16GB 内存，但 iOS 会主动终止后台应用。应用活跃内存应保持在 200MB 以内。
+
+| 组件 | 预估内存 |
 |---|---|
-| React Native JS bundle | ~30-50MB |
-| Monaco editor (per tab) | ~15-25MB |
-| File content in tabs | ~1-5MB (for typical code files) |
-| isomorphic-git objects | ~5-20MB (cached .git objects) |
-| **Total (3 open tabs)** | **~100-150MB** |
+| React Native JS 包 | ~30-50MB |
+| Monaco 编辑器（每标签） | ~15-25MB |
+| 标签中的文件内容 | ~1-5MB（典型代码文件） |
+| isomorphic-git 对象 | ~5-20MB（缓存的 .git 对象） |
+| **合计（3 个打开标签）** | **~100-150MB** |
 
-**Risk:** Opening 10+ large tabs could push memory over limit → iOS terminates app. Mitigation: implement tab eviction (unload content of background tabs) in the backlog.
+**风险：** 打开 10 个以上大型标签可能使内存超出限制 → iOS 终止应用。缓解措施：在待办事项中实现标签淘汰机制（卸载后台标签内容）。
 
 ---
 
-## Rendering Performance
+## 渲染性能
 
-React Native renders on the main thread. Heavy computations should be moved off:
+React Native 在主线程渲染。繁重计算应迁移到其他线程：
 
-| Operation | Where | v0.1 | Backlog |
+| 操作 | 执行位置 | v0.1 | 待办事项 |
 |---|---|---|---|
-| Search file traversal | JS thread | Sequential | Batch with Promise.all |
-| Diff computation (LCS) | JS thread | Sync O(mn) | Worker for large files |
-| Git status | JS thread | On-demand | Background with cache |
-| Directory listing | JS thread | Sequential stat | Parallel stat |
+| 搜索文件遍历 | JS 线程 | 顺序执行 | Promise.all 批处理 |
+| 差异计算（LCS） | JS 线程 | 同步 O(mn) | 大文件使用 Worker |
+| Git 状态 | JS 线程 | 按需调用 | 后台缓存 |
+| 目录列举 | JS 线程 | 顺序 stat | 并行 stat |
 
 ---
 
-## App Launch Optimization
+## 应用启动优化
 
-Current startup sequence:
-1. Expo runtime init (~500ms)
-2. React Native bridge init (~200ms)
-3. Component render (~100ms)
-4. **Total: ~800ms to first paint** (fast)
+当前启动序列：
+1. Expo 运行时初始化（~500ms）
+2. React Native 桥接初始化（~200ms）
+3. 组件渲染（~100ms）
+4. **合计：首次绘制约 ~800ms**（较快）
 
-Monaco load (after first tab open) adds 2-4s — this is separate from app launch and only blocks the editor surface, not the rest of the UI.
+Monaco 加载（首次打开标签后）额外需要 2-4s——这与应用启动分开，仅阻塞编辑器界面，不影响其他 UI。
 
-**v0.1 goal:** The file tree and git panel are usable immediately after launch, even before Monaco finishes loading.
+**v0.1 目标：** 即使在 Monaco 完成加载之前，文件树和 Git 面板也应在启动后立即可用。

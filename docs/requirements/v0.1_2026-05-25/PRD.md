@@ -1,263 +1,263 @@
-# Product Requirements Document — iPad VSCode v0.1
+# 产品需求文档 — iPad VSCode v0.1
 
-| Field | Value |
+| 字段 | 内容 |
 |---|---|
-| Version | 0.1 |
-| Date | 2026-05-25 |
-| Status | Released |
-| Author | JessyKol |
-| AI session | Claude Sonnet 4.6 |
+| 版本 | 0.1 |
+| 日期 | 2026-05-25 |
+| 状态 | 已发布 |
+| 作者 | JessyKol |
+| AI 会话 | Claude Sonnet 4.6 |
 
 ---
 
-## 1. Executive Summary
+## 1. 执行摘要
 
-iPad VSCode is a native iPad application that provides a full-featured code editing experience similar to Visual Studio Code. It targets developers who use iPad Pro as their primary or secondary computing device and need a capable, offline-capable (backlog) editor with integrated git workflows.
+iPad VSCode 是一款原生 iPad 应用，提供类似 Visual Studio Code 的完整代码编辑体验。目标用户为将 iPad Pro 作为主要或辅助开发设备的开发者，他们需要一个功能强大、支持离线（待办事项）且集成 Git 工作流的编辑器。
 
-v0.1 establishes the foundational architecture and ships a working product covering the core loop: **open repo → browse files → edit code → commit → push**.
-
----
-
-## 2. Problem Statement
-
-### The Gap
-
-iPad Pro hardware (M-series chip, Apple Pencil, Magic Keyboard) is powerful enough for serious development work. Yet the software ecosystem lags: no native VS Code port exists, web-based alternatives (github.dev, Replit) require persistent internet and don't feel native, and the App Store has no editor that combines Monaco-quality editing with real git operations.
-
-### Developer Pain Points
-
-1. **No proper code editor on iPad** — existing editors lack syntax highlighting quality, multi-language support, or IntelliSense
-2. **Git workflows are broken** — most iPad apps can't push/pull without server-side help
-3. **Terminal is a black box** — iOS sandbox means no shell, and users don't know what's possible
-4. **Settings don't persist** — developer tools on iPad often lose configuration between sessions
+v0.1 建立基础架构，交付一个可用的产品，覆盖核心开发闭环：**打开仓库 → 浏览文件 → 编辑代码 → 提交 → 推送**。
 
 ---
 
-## 3. Target Users
+## 2. 问题陈述
 
-### Primary Persona: Mobile Developer (Senior)
+### 现状差距
 
-> "I use my iPad Pro on flights and in coffee shops. I want to review PRs, make small fixes, and commit — without carrying my MacBook."
+iPad Pro 硬件（M 系列芯片、Apple Pencil、妙控键盘）完全具备进行专业开发工作的能力。然而软件生态严重滞后：没有原生 VS Code 移植版；网页端替代方案（github.dev、Replit）依赖持续网络连接且缺乏原生体验；App Store 上也没有任何编辑器能同时兼顾 Monaco 级别的编辑体验与真实 Git 操作。
 
-- Experience: 5+ years professional dev
-- Languages: TypeScript, Python, Go, Swift
-- Git workflow: GitHub, feature branches, PRs
-- Device: iPad Pro 12.9" + Magic Keyboard
+### 开发者痛点
 
-### Secondary Persona: CS Student
-
-> "I take notes in Notion and want to practice coding on my iPad instead of switching to my laptop."
-
-- Experience: 1-2 years, learning
-- Languages: Python, JavaScript
-- Git workflow: GitHub, simple commits
-- Device: iPad Air + Smart Keyboard
-
-### Non-Target for v0.1
-
-- Mobile developers building native iOS apps (need Xcode)
-- Data scientists running notebooks (need Jupyter)
-- DevOps engineers needing full shell (need real terminal)
+1. **iPad 上没有合适的代码编辑器** — 现有编辑器缺乏语法高亮质量、多语言支持或 IntelliSense
+2. **Git 工作流不完整** — 大多数 iPad 应用无法在没有服务端辅助的情况下推送/拉取
+3. **终端是黑盒** — iOS 沙盒限制了 shell 使用，用户不清楚什么是可行的
+4. **设置无法持久化** — iPad 上的开发工具在会话之间常常丢失配置
 
 ---
 
-## 4. Product Goals (v0.1)
+## 3. 目标用户
 
-| Goal | Metric | Target |
+### 主要用户画像：资深移动开发者
+
+> "我在飞机上和咖啡馆里使用 iPad Pro。我想查看 PR、做小修改并提交——不需要带 MacBook。"
+
+- 经验：5 年以上专业开发经验
+- 语言：TypeScript、Python、Go、Swift
+- Git 工作流：GitHub、功能分支、PR
+- 设备：iPad Pro 12.9" + 妙控键盘
+
+### 次要用户画像：计算机专业学生
+
+> "我在 Notion 里记笔记，想在 iPad 上练习编程，而不必切换到笔记本电脑。"
+
+- 经验：1-2 年，学习阶段
+- 语言：Python、JavaScript
+- Git 工作流：GitHub、简单提交
+- 设备：iPad Air + 智能键盘
+
+### v0.1 非目标用户
+
+- 开发 iOS 原生应用的移动开发者（需要 Xcode）
+- 运行 Notebook 的数据科学家（需要 Jupyter）
+- 需要完整 shell 的 DevOps 工程师（需要真实终端）
+
+---
+
+## 4. 产品目标（v0.1）
+
+| 目标 | 指标 | 目标值 |
 |---|---|---|
-| Core editor works | Monaco loads and renders syntax | 100% of supported languages |
-| Git loop complete | commit + push succeeds | End-to-end with GitHub token |
-| iPad keyboard works | ⌘S saves a file | < 200ms from keypress to disk |
-| Search usable | Find text in project | Results in < 3s for 100-file project |
-| First launch experience | User can open a file in < 60s | No tutorial needed |
+| 核心编辑器可用 | Monaco 加载并渲染语法高亮 | 所有支持语言 100% 可用 |
+| Git 闭环完整 | 提交 + 推送成功 | 使用 GitHub Token 的端到端流程 |
+| iPad 键盘可用 | ⌘S 保存文件 | 从按键到写入磁盘 < 200ms |
+| 搜索可用 | 在项目中查找文本 | 100 个文件的项目中 < 3s 返回结果 |
+| 首次启动体验 | 用户可在 60s 内打开文件 | 无需教程 |
 
 ---
 
-## 5. Feature Requirements
+## 5. 功能需求
 
-### P0 — Must Ship in v0.1
+### P0 — v0.1 必须交付
 
-#### F01: Monaco Editor (iOS-compatible)
-- **What:** Embed Monaco Editor in a WebView using inline HTML (not file:// URI)
-- **Why:** file:///android_asset/ is Android-only; iPad requires different approach
-- **Acceptance:** Editor renders on iPad Simulator with syntax highlighting for TypeScript
+#### F01：Monaco 编辑器（iOS 兼容）
+- **内容：** 使用内联 HTML（非 file:// URI）将 Monaco 编辑器嵌入 WebView
+- **原因：** file:///android_asset/ 是 Android 专有路径；iPad 需要不同方案
+- **验收标准：** 编辑器在 iPad 模拟器上渲染，TypeScript 语法高亮正常
 
-#### F02: Unified File System
-- **What:** Single FS (expo-file-system) used by both the editor and git engine
-- **Why:** Separate FS layers (LightningFS + expo-fs) meant git couldn't see edited files
-- **Acceptance:** File saved in editor is readable by `git status`; git operations affect files shown in editor
+#### F02：统一文件系统
+- **内容：** 编辑器和 Git 引擎共同使用单一文件系统（expo-file-system）
+- **原因：** 分离的文件系统层（LightningFS + expo-fs）导致 Git 无法感知已编辑的文件
+- **验收标准：** 编辑器中保存的文件可被 `git status` 读取；Git 操作影响编辑器中显示的文件
 
-#### F03: File Tree with CRUD
-- **What:** Sidebar panel showing workspace directory; create, delete, rename, open files
-- **Acceptance:** Can create a file, write to it, rename it, and delete it without leaving the app
+#### F03：文件树（含增删改）
+- **内容：** 侧边栏面板显示工作区目录；支持创建、删除、重命名、打开文件
+- **验收标准：** 可在应用内创建文件、写入内容、重命名并删除，全程无需离开应用
 
-#### F04: Multi-tab Editor
-- **What:** Multiple files open simultaneously with dirty tracking and save
-- **Acceptance:** Dirty dot shown, ⌘S saves the active file, tab content persists when switching
+#### F04：多标签编辑器
+- **内容：** 同时打开多个文件，支持脏标记追踪和保存
+- **验收标准：** 显示脏标点，⌘S 保存当前文件，切换标签时内容保持不变
 
-#### F05: Git Status & Staging
-- **What:** Show changed/staged/untracked files; stage/unstage individual files or all
-- **Acceptance:** After editing a file, it appears in "Changes"; staging moves it to "Staged"
+#### F05：Git 状态与暂存
+- **内容：** 显示已修改/已暂存/未追踪文件；支持单个或全部文件的暂存/取消暂存
+- **验收标准：** 编辑文件后，该文件出现在"更改"列表；暂存后移动到"已暂存"列表
 
-#### F06: Git Commit
-- **What:** Commit staged files with a message; requires author name/email
-- **Acceptance:** After commit, staged changes clear and new commit appears in history
+#### F06：Git 提交
+- **内容：** 提交已暂存文件并附带提交信息；需要设置作者姓名/邮箱
+- **验收标准：** 提交后，已暂存更改清空，新提交出现在历史记录中
 
-#### F07: Git Push / Pull
-- **What:** Push to and pull from HTTPS remote using a GitHub personal access token
-- **Acceptance:** Push creates a commit on GitHub; pull brings remote commits to local
+#### F07：Git 推送/拉取
+- **内容：** 使用 GitHub 个人访问令牌（PAT）通过 HTTPS 推送和拉取
+- **验收标准：** 推送在 GitHub 上创建提交；拉取将远程提交同步到本地
 
-#### F08: Git Diff View
-- **What:** Line-by-line diff of current file vs HEAD, with context lines
-- **Acceptance:** Added lines green, removed lines red; shows correct changes for a modified file
+#### F08：Git 差异视图
+- **内容：** 按行显示当前文件与 HEAD 的差异，包含上下文行
+- **验收标准：** 新增行显示为绿色，删除行显示为红色；修改文件后显示正确的差异内容
 
-#### F09: Commit History
-- **What:** Timeline showing last 50 commits with author, date, hash, message
-- **Acceptance:** Displays commits after cloning a real GitHub repo
+#### F09：提交历史
+- **内容：** 时间线显示最近 50 条提交，包含作者、日期、哈希值和提交信息
+- **验收标准：** 克隆真实 GitHub 仓库后能正确显示提交记录
 
-#### F10: Branch Management
-- **What:** List branches, switch branch, create branch
-- **Acceptance:** Creating a branch and switching to it reflects in status bar
+#### F10：分支管理
+- **内容：** 列出分支、切换分支、创建分支
+- **验收标准：** 创建并切换到新分支后，状态栏显示更新
 
-#### F11: Full-Text Search
-- **What:** Search all text files in workspace; show file + line + context
-- **Acceptance:** Search for a function name returns all occurrences across files
+#### F11：全文搜索
+- **内容：** 搜索工作区内所有文本文件；显示文件名 + 行号 + 上下文
+- **验收标准：** 搜索函数名可跨文件返回所有出现位置
 
-#### F12: Settings Panel
-- **What:** Git author, GitHub token, theme, font size, clone repo, init repo
-- **Acceptance:** Changing theme updates Monaco immediately; setting token enables push
+#### F12：设置面板
+- **内容：** Git 作者信息、GitHub Token、主题、字体大小、克隆仓库、初始化仓库
+- **验收标准：** 更改主题立即更新 Monaco；设置 Token 后可启用推送功能
 
-#### F13: Keyboard Shortcuts (Magic Keyboard)
-- **What:** ⌘S save, ⌘P quick open, ⌘B sidebar, ⌘\` terminal, ⌘⇧P command palette
-- **Acceptance:** Each shortcut works when editor is focused
+#### F13：键盘快捷键（妙控键盘）
+- **内容：** ⌘S 保存、⌘P 快速打开、⌘B 侧边栏、⌘\` 终端、⌘⇧P 命令面板
+- **验收标准：** 编辑器聚焦时每个快捷键均有效
 
-#### F14: Quick Open (⌘P)
-- **What:** Modal fuzzy file picker showing all files in workspace
-- **Acceptance:** Typing part of filename filters list; tapping opens file in editor
+#### F14：快速打开（⌘P）
+- **内容：** 弹窗模糊搜索工作区内所有文件
+- **验收标准：** 输入文件名部分内容过滤列表；点击后在编辑器中打开该文件
 
-#### F15: Terminal with Git Commands
-- **What:** Built-in terminal supporting git commands via isomorphic-git
-- **Acceptance:** `git commit -m "msg"` creates a commit; `git push` pushes to remote
-
----
-
-### P1 — Target v0.1 but deferrable
-
-#### F16: Clone Repository
-- **What:** Clone a GitHub HTTPS URL into the workspace
-- **Accepted in Settings panel** — deferred from git panel for simplicity
-
-#### F17: Git Status Badges in File Tree
-- **What:** M/A/U indicators next to changed files
-- **Acceptance:** After editing a file, "M" appears next to it in the tree
+#### F15：带 Git 命令的终端
+- **内容：** 内置终端，通过 isomorphic-git 支持 Git 命令
+- **验收标准：** `git commit -m "msg"` 创建提交；`git push` 推送到远程
 
 ---
 
-## 6. User Stories
+### P1 — v0.1 目标但可延期
 
-### US01 — Review and fix a bug on iPad
+#### F16：克隆仓库
+- **内容：** 将 GitHub HTTPS URL 克隆到工作区
+- **已在设置面板中实现** — 从 Git 面板简化移过来
 
-> As a senior developer on a flight with no laptop,
-> I want to clone my GitHub repo, fix a bug, and push the fix,
-> so that I can unblock my team without opening my laptop.
-
-**Flow:**
-1. Open app → Settings → Clone Repository → enter URL + token
-2. Wait for clone → workspace opens automatically
-3. File tree shows project → tap file to open
-4. Monaco editor opens with syntax highlighting
-5. Edit the bug → ⌘S to save
-6. Git panel → Stage → Commit → Push
-7. Confirm on GitHub
-
-**Acceptance:** Entire flow completes within the app, no browser needed.
-
-### US02 — Explore an unfamiliar codebase
-
-> As a CS student reviewing a reference project,
-> I want to search for where a function is defined and how it's called,
-> so that I can understand the codebase structure.
-
-**Flow:**
-1. Open existing workspace (already cloned)
-2. ⌘P → type filename → open entry point
-3. ⌘P → search panel → type function name
-4. Results show all occurrences → tap to navigate
-
-### US03 — Daily coding session
-
-> As a developer who uses iPad as secondary machine,
-> I want to open the app and continue where I left off,
-> so that I don't spend time re-navigating to my work.
-
-**Note:** v0.1 does NOT persist workspace between sessions (file state is in memory). This is a known gap addressed in the backlog.
+#### F17：文件树中的 Git 状态徽标
+- **内容：** 在已修改文件旁显示 M/A/U 指示符
+- **验收标准：** 编辑文件后，文件树中该文件旁显示"M"
 
 ---
 
-## 7. Non-Functional Requirements
+## 6. 用户故事
 
-### Performance
-| Scenario | Target |
+### US01 — 在 iPad 上审查并修复 Bug
+
+> 作为一名在飞机上没带笔记本的资深开发者，
+> 我想克隆我的 GitHub 仓库、修复一个 bug 并推送修复，
+> 以便在不打开笔记本的情况下解除团队的阻塞。
+
+**操作流程：**
+1. 打开应用 → 设置 → 克隆仓库 → 输入 URL + Token
+2. 等待克隆完成 → 工作区自动打开
+3. 文件树显示项目 → 点击文件打开
+4. Monaco 编辑器打开并显示语法高亮
+5. 修复 bug → ⌘S 保存
+6. Git 面板 → 暂存 → 提交 → 推送
+7. 在 GitHub 上确认
+
+**验收标准：** 整个流程在应用内完成，无需打开浏览器。
+
+### US02 — 探索陌生代码库
+
+> 作为一名查阅参考项目的计算机专业学生，
+> 我想搜索某个函数的定义位置及调用方式，
+> 以便理解代码库的结构。
+
+**操作流程：**
+1. 打开已有工作区（已克隆）
+2. ⌘P → 输入文件名 → 打开入口文件
+3. ⌘P → 搜索面板 → 输入函数名
+4. 结果显示所有出现位置 → 点击跳转
+
+### US03 — 日常编码会话
+
+> 作为一名将 iPad 作为辅助设备的开发者，
+> 我想打开应用后继续上次的工作，
+> 以便不必花时间重新导航到工作内容。
+
+**注意：** v0.1 **不**在会话之间持久化工作区（文件状态保存在内存中）。这是待办事项中已知的功能缺口。
+
+---
+
+## 7. 非功能性需求
+
+### 性能
+| 场景 | 目标值 |
 |---|---|
-| App cold start to usable | < 3s |
-| Monaco editor load | < 5s (CDN dependent) |
-| File open (< 500KB) | < 300ms |
-| Git status refresh | < 2s for 1000-file repo |
-| Search (100 files, 10k lines) | < 3s |
-| Commit operation | < 1s |
-| Push (small commit) | < 5s (network dependent) |
+| 应用冷启动到可用 | < 3s |
+| Monaco 编辑器加载 | < 5s（依赖 CDN） |
+| 打开文件（< 500KB） | < 300ms |
+| Git 状态刷新 | 1000 个文件的仓库 < 2s |
+| 搜索（100 个文件，10k 行） | < 3s |
+| 提交操作 | < 1s |
+| 推送（小提交） | < 5s（依赖网络） |
 
-### Reliability
-- File save must be atomic (expo-file-system writeAsStringAsync is atomic on iOS)
-- Git state should not corrupt if app is backgrounded during an operation
-- WebView crashes should not crash the main app process
+### 可靠性
+- 文件保存必须是原子操作（expo-file-system 的 writeAsStringAsync 在 iOS 上是原子的）
+- 应用在 Git 操作期间被置于后台时，Git 状态不应损坏
+- WebView 崩溃不应导致主应用进程崩溃
 
-### Security
-- GitHub token is in-memory only (v0.1); not written to disk
-- No token logging in console output
-- WebView CSP allows cdnjs.cloudflare.com only (not *, but relaxed for dev)
-- No telemetry or analytics in v0.1
+### 安全性
+- GitHub Token 仅保存在内存中（v0.1），不写入磁盘
+- 控制台输出中不记录 Token
+- WebView CSP 仅允许 cdnjs.cloudflare.com（非 *，但开发环境有所放宽）
+- v0.1 不包含任何遥测或数据分析
 
-### Compatibility
-- Primary: iPad Pro 12.9" (M1/M2/M4), iPadOS 16+
-- Secondary: iPad Pro 11", iPad Air 5+
+### 兼容性
+- 主要目标：iPad Pro 12.9"（M1/M2/M4），iPadOS 16+
+- 次要目标：iPad Pro 11"、iPad Air 5+
 - Expo SDK 51 / React Native 0.74
-- Magic Keyboard, Smart Keyboard Folio, third-party BT keyboards
+- 妙控键盘、智能键盘连接器、第三方蓝牙键盘
 
 ---
 
-## 8. Out of Scope for v0.1
+## 8. v0.1 范围外功能
 
-| Feature | Reason |
+| 功能 | 原因 |
 |---|---|
-| Settings persistence | Requires expo-secure-store; v0.2 |
-| Command palette (real) | Alert placeholder ships in v0.1; real impl v0.2 |
-| Resizable panels | Gesture handling complexity; v0.2 |
-| SSH terminal | Native module needed; v0.2 |
-| Regex search | Backlog |
-| Git merge UI | Backlog |
-| Offline Monaco | Large asset bundling; v0.3 |
-| LSP / language server | v0.3 |
-| App Store submission | v1.0 |
+| 设置持久化 | 需要 expo-secure-store；v0.2 实现 |
+| 真实命令面板 | v0.1 使用 Alert 占位符；v0.2 实现真实功能 |
+| 可调整面板尺寸 | 手势处理复杂度较高；v0.2 实现 |
+| SSH 终端 | 需要原生模块；v0.2 实现 |
+| 正则表达式搜索 | 待办事项 |
+| Git 合并 UI | 待办事项 |
+| 离线 Monaco | 大型资源打包；v0.3 实现 |
+| LSP / 语言服务器 | v0.3 实现 |
+| App Store 上架 | v1.0 实现 |
 
 ---
 
-## 9. Risks & Mitigations
+## 9. 风险与缓解措施
 
-| Risk | Likelihood | Impact | Mitigation |
+| 风险 | 可能性 | 影响 | 缓解措施 |
 |---|---|---|---|
-| Monaco CDN unavailable | Low | High | Cache in AsyncStorage after first load (backlog) |
-| isomorphic-git doesn't support server | Medium | Medium | Fallback error message; test with GitHub |
-| WebView postMessage latency | Low | Medium | Debounce content sync; tested at < 50ms |
-| iOS WebView CSP blocks CDN | Low | High | Meta CSP tag allows cdnjs.cloudflare.com |
-| expo-file-system permission issues | Low | High | App declares UIFileSharingEnabled in plist |
-| Large repo clone timeout | Medium | Low | Clone with `depth: 50`; user can configure |
+| Monaco CDN 不可用 | 低 | 高 | 首次加载后缓存到 AsyncStorage（待办事项） |
+| isomorphic-git 不支持某服务器 | 中 | 中 | 显示回退错误信息；已与 GitHub 测试 |
+| WebView postMessage 延迟 | 低 | 中 | 内容同步加防抖；测试延迟 < 50ms |
+| iOS WebView CSP 阻止 CDN | 低 | 高 | Meta CSP 标签允许 cdnjs.cloudflare.com |
+| expo-file-system 权限问题 | 低 | 高 | 应用在 plist 中声明 UIFileSharingEnabled |
+| 大型仓库克隆超时 | 中 | 低 | 使用 `depth: 50` 浅克隆；用户可配置 |
 
 ---
 
-## 10. Open Questions
+## 10. 待解问题
 
-1. **Token security:** Should the token ever be written to disk? If yes, use expo-secure-store (Keychain). Decision deferred to v0.2.
-2. **Workspace discovery:** Should the app show a "recent workspaces" list on launch? Yes — backlog.
-3. **Monaco bundling strategy:** Bundle all 50 language workers locally (~30MB), or lazy-load on demand? Decision backlog planning.
-4. **LSP approach:** Run TypeScript language server in JavaScriptCore, or use a remote LSP proxy? Both options to be prototyped in the backlog research phase.
+1. **Token 安全性：** Token 是否应该写入磁盘？如果是，使用 expo-secure-store（Keychain）。决策推迟到 v0.2。
+2. **工作区发现：** 应用启动时是否应显示"最近工作区"列表？是——待办事项。
+3. **Monaco 打包策略：** 将所有 50 个语言 Worker 本地打包（约 30MB），还是按需懒加载？决策推迟到待办事项规划阶段。
+4. **LSP 方案：** 在 JavaScriptCore 中运行 TypeScript 语言服务器，还是使用远程 LSP 代理？两种方案均将在待办事项研究阶段进行原型验证。

@@ -1,123 +1,123 @@
-# Feature Status
+# 功能状态
 
-Last updated: 2026-05-25 | Version: 0.1
+最后更新：2026-05-25 | 版本：0.1
 
-## Legend
-| Symbol | Meaning |
+## 图例
+| 符号 | 含义 |
 |---|---|
-| ✅ | Implemented and working |
-| ⚠️ | Partial / known limitations |
-| 📋 | Not yet implemented (backlog, no version assigned) |
-| ❌ | Not planned / out of scope |
+| ✅ | 已实现且可用 |
+| ⚠️ | 部分实现 / 存在已知限制 |
+| 📋 | 尚未实现（待办事项，未分配版本） |
+| ❌ | 不计划实现 / 超出范围 |
 
 ---
 
-## Editor
+## 编辑器
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 备注 |
 |---|---|---|
-| Monaco Editor (syntax highlighting) | ✅ | 50+ languages via Monaco |
-| Inline HTML bridge (iOS + Android) | ✅ | Replaced Android-only file:// path |
-| Multiple tabs | ✅ | Horizontal scroll, dirty indicator |
-| Tab close / switch | ✅ | |
-| Save file (⌘S) | ✅ | Via Monaco keybinding → postMessage |
-| Quick Open (⌘P) | ✅ | Modal with fuzzy filter |
-| Find in file (⌘F) | ✅ | Monaco native find widget |
-| Format document | ✅ | Monaco built-in formatters |
-| Code completion (IntelliSense) | ⚠️ | Monaco built-in only; no LSP server |
-| Go to definition | ⚠️ | Monaco basic (same-file only) |
-| Split editor | 📋 | Backlog |
-| Minimap | ✅ | Disabled by default (perf) |
-| Word wrap toggle | 📋 | Backlog |
-| Diff editor (in-app) | ✅ | Git panel → file → diff icon |
-| Offline Monaco | 📋 | Backlog (currently requires CDN) |
+| Monaco 编辑器（语法高亮） | ✅ | 通过 Monaco 支持 50+ 种语言 |
+| 内联 HTML 桥接（iOS + Android） | ✅ | 替换了仅限 Android 的 file:// 路径 |
+| 多标签 | ✅ | 横向滚动，脏标记指示 |
+| 关闭/切换标签 | ✅ | |
+| 保存文件（⌘S） | ✅ | 通过 Monaco 键位绑定 → postMessage |
+| 快速打开（⌘P） | ✅ | 带模糊过滤的模态框 |
+| 文件内查找（⌘F） | ✅ | Monaco 原生查找组件 |
+| 格式化文档 | ✅ | Monaco 内置格式化工具 |
+| 代码补全（IntelliSense） | ⚠️ | 仅 Monaco 内置；无 LSP 服务器 |
+| 跳转定义 | ⚠️ | Monaco 基础（仅同文件） |
+| 分屏编辑 | 📋 | 待办事项 |
+| 缩略图 | ✅ | 默认关闭（性能考虑） |
+| 自动换行切换 | 📋 | 待办事项 |
+| 差异编辑器（应用内） | ✅ | Git 面板 → 文件 → 差异图标 |
+| 离线 Monaco | 📋 | 待办事项（当前需要 CDN） |
 
-## File System
+## 文件系统
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 备注 |
 |---|---|---|
-| Open workspace (create new) | ✅ | Alert.prompt flow |
-| List existing workspaces | ✅ | Shows existing workspace names |
-| File tree (expand/collapse) | ✅ | Lazy-load children |
-| Open file in editor | ✅ | |
-| Create file | ✅ | Long-press folder |
-| Create folder | ✅ | Long-press folder |
-| Delete file / folder | ✅ | Long-press → Delete |
-| Rename file / folder | ✅ | Long-press → Rename |
-| File icons by type | ✅ | Color-coded by language |
-| Git status badges in tree | ✅ | M / A / U indicators |
-| Import from Files.app | 📋 | Backlog |
-| iCloud Drive support | 📋 | Backlog |
+| 打开工作区（新建） | ✅ | Alert.prompt 流程 |
+| 列出已有工作区 | ✅ | 显示已有工作区名称 |
+| 文件树（展开/折叠） | ✅ | 懒加载子目录 |
+| 在编辑器中打开文件 | ✅ | |
+| 创建文件 | ✅ | 长按文件夹 |
+| 创建文件夹 | ✅ | 长按文件夹 |
+| 删除文件/文件夹 | ✅ | 长按 → 删除 |
+| 重命名文件/文件夹 | ✅ | 长按 → 重命名 |
+| 按类型显示文件图标 | ✅ | 按语言颜色编码 |
+| 文件树中的 Git 状态徽标 | ✅ | M / A / U 指示符 |
+| 从文件 App 导入 | 📋 | 待办事项 |
+| iCloud 云盘支持 | 📋 | 待办事项 |
 
 ## Git
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 备注 |
 |---|---|---|
-| Git status | ✅ | staged / unstaged / untracked |
-| Stage file | ✅ | Tap file row in Git panel |
-| Unstage file | ✅ | Tap staged file |
-| Stage all | ✅ | "Stage All" button |
-| Commit | ✅ | Requires author in Settings |
-| Push | ✅ | Requires token in Settings |
-| Pull | ✅ | Requires author + token |
-| Clone repo | ✅ | Settings → Clone Repository |
-| Init repo | ✅ | Settings → Init Repository |
-| Branch list | ✅ | Git panel → branch button |
-| Switch branch | ✅ | Branch list → tap |
-| Create branch | ✅ | Branch list → + |
-| Commit history | ✅ | Timeline view (last 50) |
-| File diff (HEAD vs working) | ✅ | Line-by-line, ±context |
-| Merge | 📋 | Backlog |
-| Rebase | ❌ | Out of scope |
-| SSH remote | ❌ | isomorphic-git HTTP only |
-| GitHub PR creation | 📋 | Backlog |
-| Multiple remotes | ⚠️ | Works but UI only shows first |
+| Git 状态 | ✅ | 已暂存 / 未暂存 / 未追踪 |
+| 暂存文件 | ✅ | 点击 Git 面板中的文件行 |
+| 取消暂存文件 | ✅ | 点击已暂存文件 |
+| 全部暂存 | ✅ | "全部暂存"按钮 |
+| 提交 | ✅ | 需要在设置中配置作者信息 |
+| 推送 | ✅ | 需要在设置中配置 Token |
+| 拉取 | ✅ | 需要作者信息 + Token |
+| 克隆仓库 | ✅ | 设置 → 克隆仓库 |
+| 初始化仓库 | ✅ | 设置 → 初始化仓库 |
+| 分支列表 | ✅ | Git 面板 → 分支按钮 |
+| 切换分支 | ✅ | 分支列表 → 点击 |
+| 创建分支 | ✅ | 分支列表 → + |
+| 提交历史 | ✅ | 时间线视图（最近 50 条） |
+| 文件差异（HEAD 与工作区） | ✅ | 按行，含上下文 |
+| 合并 | 📋 | 待办事项 |
+| 变基 | ❌ | 超出范围 |
+| SSH 远程 | ❌ | isomorphic-git 仅支持 HTTP |
+| 创建 GitHub PR | 📋 | 待办事项 |
+| 多个远程 | ⚠️ | 可用，但 UI 仅显示第一个 |
 
-## Terminal
+## 终端
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 备注 |
 |---|---|---|
-| Built-in commands | ✅ | help, clear, pwd, echo, date, ls, cat, open |
-| Git via terminal | ⚠️ | Works; `git log` shows raw ANSI escape codes (rendering bug, see spec/modules/04_terminal.md) |
-| Command history (↑↓) | ✅ | |
-| Real shell (bash/zsh) | ❌ | iOS sandbox; not possible |
-| SSH client | 📋 | Backlog |
-| JavaScript eval (sandboxed) | 📋 | Backlog |
-| Multiple terminal tabs | 📋 | Backlog |
+| 内置命令 | ✅ | help、clear、pwd、echo、date、ls、cat、open |
+| 终端 Git | ⚠️ | 可用；`git log` 显示原始 ANSI 转义码（渲染 bug，见 spec/modules/04_terminal.md） |
+| 命令历史（↑↓） | ✅ | |
+| 真实 shell（bash/zsh） | ❌ | iOS 沙盒限制；不可行 |
+| SSH 客户端 | 📋 | 待办事项 |
+| JavaScript 执行（沙盒） | 📋 | 待办事项 |
+| 多终端标签 | 📋 | 待办事项 |
 
-## Search
+## 搜索
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 备注 |
 |---|---|---|
-| Full-text search in workspace | ⚠️ | Only searches directories already expanded in FileTree; see spec/modules/05_search.md |
-| Case-sensitive toggle | ✅ | |
-| Click to open file at line | ✅ | Opens file; does not scroll to line yet |
-| Results grouped by file | ✅ | |
-| Regex search | 📋 | Backlog |
-| Replace | 📋 | Backlog |
-| Include/exclude glob patterns | 📋 | Backlog |
+| 工作区全文搜索 | ⚠️ | 仅搜索 FileTree 中已展开目录；见 spec/modules/05_search.md |
+| 区分大小写切换 | ✅ | |
+| 点击跳转到文件对应行 | ✅ | 打开文件；尚未滚动到对应行 |
+| 按文件分组结果 | ✅ | |
+| 正则表达式搜索 | 📋 | 待办事项 |
+| 替换 | 📋 | 待办事项 |
+| 包含/排除 glob 模式 | 📋 | 待办事项 |
 
-## Settings & Config
+## 设置与配置
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 备注 |
 |---|---|---|
-| Git author (name + email) | ✅ | Required for commit |
-| GitHub token | ✅ | Required for push/pull; stored in-memory only |
-| Theme (Dark/Light/HC) | ✅ | Propagates to Monaco |
-| Font size | ✅ | 10–24px |
-| Token persistence | 📋 | Backlog (currently lost on app restart) |
-| Settings persistence | 📋 | Backlog (currently lost on app restart) |
-| Custom keybindings | 📋 | Backlog |
+| Git 作者（姓名 + 邮箱） | ✅ | 提交必需 |
+| GitHub Token | ✅ | 推送/拉取必需；仅保存在内存中 |
+| 主题（深色/浅色/高对比度） | ✅ | 传播到 Monaco |
+| 字体大小 | ✅ | 10–24px |
+| Token 持久化 | 📋 | 待办事项（当前应用重启后丢失） |
+| 设置持久化 | 📋 | 待办事项（当前应用重启后丢失） |
+| 自定义键位绑定 | 📋 | 待办事项 |
 
-## UX & Navigation
+## 用户体验与导航
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 备注 |
 |---|---|---|
-| Keyboard shortcuts (⌘S/P/B/`) | ✅ | Hardware keyboard required |
-| Status bar (branch, cursor, lang) | ✅ | Clickable git indicator |
-| Activity bar git change count | ✅ | Badge on Source Control icon |
-| Resizable sidebar | 📋 | Backlog |
-| Resizable terminal panel | 📋 | Backlog |
-| Command palette (⌘⇧P) | ⚠️ | Keybinding works; shows placeholder alert only |
-| Drag-and-drop files | 📋 | Backlog |
-| Multitasking (Split View) | ⚠️ | Works but layout not optimised |
+| 键盘快捷键（⌘S/P/B/\`） | ✅ | 需要硬件键盘 |
+| 状态栏（分支、光标、语言） | ✅ | Git 指示器可点击 |
+| 活动栏 Git 变更计数 | ✅ | 源代码管理图标上的徽标 |
+| 可调整侧边栏尺寸 | 📋 | 待办事项 |
+| 可调整终端面板尺寸 | 📋 | 待办事项 |
+| 命令面板（⌘⇧P） | ⚠️ | 键位绑定有效；仅显示占位符 Alert |
+| 拖放文件 | 📋 | 待办事项 |
+| 多任务（分屏） | ⚠️ | 可用，但布局未优化 |

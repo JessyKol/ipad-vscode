@@ -1,93 +1,93 @@
-# Module Spec: Git Engine
+# 模块规格说明：Git 引擎
 
-| Module | Git |
+| 模块 | Git |
 |---|---|
-| Files | `src/services/git.ts`, `src/services/fsAdapter.ts`, `src/components/Git/GitPanel.tsx`, `src/components/Git/GitDiffView.tsx`, `src/components/Git/GitHistoryView.tsx` |
-| Version | 0.1 |
+| 相关文件 | `src/services/git.ts`、`src/services/fsAdapter.ts`、`src/components/Git/GitPanel.tsx`、`src/components/Git/GitDiffView.tsx`、`src/components/Git/GitHistoryView.tsx` |
+| 版本 | 0.1 |
 
 ---
 
-## Responsibility
+## 职责
 
-Provide git operations (status, stage, commit, push, pull, branch, diff, log) using isomorphic-git with expo-file-system as the backing storage via fsAdapter.
+通过 isomorphic-git 提供 Git 操作（状态、暂存、提交、推送、拉取、分支、差异、日志），使用 fsAdapter 将 expo-file-system 作为底层存储。
 
 ---
 
-## Core Principle: Unified File System
+## 核心原则：统一文件系统
 
 ```
 isomorphic-git
-      ↓ uses
+      ↓ 使用
   fsAdapter.ts
-      ↓ wraps
+      ↓ 封装
   expo-file-system
-      ↓ reads/writes
-  device storage (Documents/workspaces/<repo>/)
-      ↑ same storage
-  fileSystem.ts (editor reads/writes)
+      ↓ 读写
+  设备存储（Documents/workspaces/<repo>/）
+      ↑ 同一存储
+  fileSystem.ts（编辑器读写）
 ```
 
-This ensures git has full visibility into files that the editor has created or modified.
+这确保 Git 能够完整感知编辑器创建或修改的文件。
 
 ---
 
 ## git.ts API
 
 ```typescript
-// Repository lifecycle
+// 仓库生命周期
 initRepo(dir: string): Promise<void>
 cloneRepo(url: string, dir: string, token?: string): Promise<void>
 
-// Status
+// 状态
 getStatus(dir: string): Promise<GitStatus>
-  // Returns { staged[], unstaged[], untracked[] }
-  // Uses isomorphic-git statusMatrix for efficiency
+  // 返回 { staged[], unstaged[], untracked[] }
+  // 使用 isomorphic-git statusMatrix 提升效率
 
-// Staging
+// 暂存
 stageFile(dir: string, filepath: string): Promise<void>   // git add <file>
 unstageFile(dir: string, filepath: string): Promise<void> // git resetIndex
 stageAll(dir: string): Promise<void>                      // git add .
 
-// Commit
-commit(dir, message, { name, email }): Promise<string>    // returns oid
+// 提交
+commit(dir, message, { name, email }): Promise<string>    // 返回 oid
 
-// Remote
+// 远程操作
 push(dir, token, remote?, branch?): Promise<void>
 pull(dir, author, token?): Promise<void>
 getRemotes(dir): Promise<Array<{ remote, url }>>
 
-// Branches
+// 分支
 listBranches(dir): Promise<string[]>
 getCurrentBranch(dir): Promise<string | void>
-createBranch(dir, ref): Promise<void>         // creates + checks out
+createBranch(dir, ref): Promise<void>         // 创建并检出
 checkoutBranch(dir, ref): Promise<void>
 
-// History & Diff
+// 历史与差异
 getLog(dir, depth?): Promise<GitCommit[]>
-getHeadContent(dir, filepath): Promise<string>  // reads blob at HEAD
+getHeadContent(dir, filepath): Promise<string>  // 读取 HEAD 处的 blob
 ```
 
 ---
 
-## Status Matrix Interpretation
+## 状态矩阵解读
 
-isomorphic-git returns a matrix of `[filepath, head, workdir, stage]` where each value is 0, 1, or 2.
+isomorphic-git 返回 `[filepath, head, workdir, stage]` 矩阵，每个值为 0、1 或 2。
 
 ```
-[filepath, 0, 2, 0] → untracked   (new file, not staged)
-[filepath, 1, 1, 1] → clean       (no changes)
-[filepath, 1, 2, 1] → unstaged    (modified, not staged)
-[filepath, 1, 2, 2] → staged      (modified and staged)
-[filepath, 1, 1, 0] → unstaged    (delete staged then reverted? — edge case)
-stage !== head      → staged changes
-workdir !== head    → unstaged changes (when stage === head)
+[filepath, 0, 2, 0] → 未追踪   （新文件，未暂存）
+[filepath, 1, 1, 1] → 干净     （无更改）
+[filepath, 1, 2, 1] → 未暂存   （已修改，未暂存）
+[filepath, 1, 2, 2] → 已暂存   （已修改且已暂存）
+[filepath, 1, 1, 0] → 未暂存   （暂存删除后撤销——边缘情况）
+stage !== head      → 有已暂存更改
+workdir !== head    → 有未暂存更改（当 stage === head 时）
 ```
 
-Our `getStatus()` simplifies to three buckets. This covers 95% of workflows. Edge cases (renamed, deleted-staged, etc.) show up in "staged" with potentially wrong badges — improvement backlog.
+我们的 `getStatus()` 简化为三个分类。覆盖 95% 的工作流场景。边缘情况（重命名、暂存删除等）可能以错误徽标显示在"已暂存"中——待办事项中改进。
 
 ---
 
-## Clone Configuration
+## 克隆配置
 
 ```typescript
 git.clone({
@@ -95,95 +95,95 @@ git.clone({
   http,
   dir,
   url,
-  singleBranch: true,    // only clone default branch — faster, smaller
-  depth: 50,             // shallow clone — much faster for large repos
-  corsProxy: 'https://cors.isomorphic-git.org',  // required for browser/WebView HTTP
+  singleBranch: true,    // 仅克隆默认分支——更快，体积更小
+  depth: 50,             // 浅克隆——大型仓库速度快得多
+  corsProxy: 'https://cors.isomorphic-git.org',  // 浏览器/WebView HTTP 必需
   onAuth: token ? () => ({ username: token, password: '' }) : undefined,
 })
 ```
 
-**CORS proxy:** isomorphic-git's HTTP transport in browser contexts requires a CORS proxy because GitHub API responses don't include CORS headers for git protocol. The official proxy at `cors.isomorphic-git.org` is used. Alternative: self-host the proxy.
+**CORS 代理：** 在浏览器上下文中，isomorphic-git 的 HTTP 传输需要 CORS 代理，因为 GitHub API 响应不包含 Git 协议的 CORS 头。使用官方代理 `cors.isomorphic-git.org`。替代方案：自行搭建代理。
 
-**Authentication:** GitHub personal access tokens (PAT) are passed as the HTTP username with empty password. This matches GitHub's PAT authentication scheme.
+**身份验证：** GitHub 个人访问令牌（PAT）作为 HTTP 用户名传递，密码为空。这符合 GitHub 的 PAT 身份验证方案。
 
 ---
 
-## Push / Pull Auth
+## 推送/拉取鉴权
 
 ```typescript
 onAuth: () => ({ username: token, password: '' })
 ```
 
-Token is read from `editorStore.gitSettings.token` at call time. It is never persisted to disk in v0.1.
+Token 在调用时从 `editorStore.gitSettings.token` 读取。v0.1 中永不持久化到磁盘。
 
 ---
 
-## Diff Algorithm (GitDiffView)
+## 差异算法（GitDiffView）
 
-To show HEAD vs working tree diff:
+显示 HEAD 与工作区差异的步骤：
 
-1. `getHeadContent(dir, filepath)` → reads blob from last commit
-2. `readFile(workspacePath + '/' + filepath)` → reads current working file
-3. `computeDiff(headContent, workContent)` → LCS-based line diff
-4. `toHunks(lines, ctx=3)` → filter to changed regions ±3 context lines
+1. `getHeadContent(dir, filepath)` → 从最后一次提交读取 blob
+2. `readFile(workspacePath + '/' + filepath)` → 读取当前工作文件
+3. `computeDiff(headContent, workContent)` → 基于 LCS 的行差异
+4. `toHunks(lines, ctx=3)` → 过滤到变更区域（±3 行上下文）
 
-### LCS Diff Algorithm
+### LCS 差异算法
 
 ```
-O(m × n) time and space (m = old lines, n = new lines)
-Practical limit: ~2000-line files compute in < 100ms on M-series iPad
-For files > 5000 lines, consider paginating or using a diff WASM module (backlog)
+时间和空间复杂度 O(m × n)（m = 旧行数，n = 新行数）
+实际限制：~2000 行文件在 M 系列 iPad 上计算耗时 < 100ms
+对于 > 5000 行的文件，考虑分页或使用 diff WASM 模块（待办事项）
 ```
 
-Output line types: `add` (green), `del` (red), `ctx` (unchanged, shown as context).
+输出行类型：`add`（绿色）、`del`（红色）、`ctx`（未修改，作为上下文显示）。
 
 ---
 
-## Branch Operations
+## 分支操作
 
 ```
-listBranches(dir)      → git.listBranches  (local branches only)
+listBranches(dir)      → git.listBranches（仅本地分支）
 createBranch(dir, ref) → git.branch({ ref, checkout: true })
 checkoutBranch(dir, ref) → git.checkout({ ref })
 ```
 
-**After any checkout:** Must call `getCurrentBranch(dir)` and update store's `activeBranch`.
+**任何检出后：** 必须调用 `getCurrentBranch(dir)` 并更新存储中的 `activeBranch`。
 
-**Remote branches:** Not shown in v0.1. `git.listRemoteBranches` available in isomorphic-git backlog.
+**远程分支：** v0.1 中不显示。`git.listRemoteBranches` 在 isomorphic-git 中可用，列为待办事项。
 
 ---
 
-## Error Handling Strategy
+## 错误处理策略
 
-All git operations may fail due to:
-- Network errors (push/pull/clone)
-- Auth errors (wrong token, expired)
-- Conflicts (pull with local changes)
-- Not-a-repo errors (no `.git/` directory)
+所有 Git 操作可能因以下原因失败：
+- 网络错误（推送/拉取/克隆）
+- 鉴权错误（Token 错误或已过期）
+- 冲突（有本地更改时拉取）
+- 非仓库错误（无 `.git/` 目录）
 
-Pattern used throughout:
+全程使用的模式：
 ```typescript
 try {
   setLoading(true);
   await gitOperation();
   await refresh();
 } catch (e: any) {
-  Alert.alert('Operation failed', e.message);
+  Alert.alert('操作失败', e.message);
 } finally {
   setLoading(false);
 }
 ```
 
-**Important:** Error messages from isomorphic-git are shown directly to users. They are technical but usually actionable. Improve error messaging in the backlog (map common errors to human-readable messages).
+**重要：** isomorphic-git 的错误信息直接显示给用户。技术性较强但通常可操作。待办事项中改进错误信息（将常见错误映射为人类可读的提示）。
 
 ---
 
-## Post-Mutation Refresh Pattern
+## 变更后刷新模式
 
-Every mutation MUST refresh git status:
+每次变更后必须刷新 Git 状态：
 
 ```typescript
-// After stageFile, unstageFile, stageAll, commit, pull:
+// stageFile、unstageFile、stageAll、commit、pull 之后：
 const [status, branch] = await Promise.all([
   getStatus(dir),
   getCurrentBranch(dir),
@@ -192,15 +192,15 @@ setGitStatus(status);
 setActiveBranch(branch ?? 'HEAD');
 ```
 
-This is enforced by convention; could be encapsulated into a `useGitOps` hook in the backlog.
+这是约定执行的；可在待办事项中封装为 `useGitOps` Hook。
 
 ---
 
-## Known Limitations (v0.1)
+## 已知限制（v0.1）
 
-1. **SSH not supported** — isomorphic-git HTTP transport only. Workaround: use HTTPS with PAT.
-2. **Shallow clone (`depth: 50`)** — history view shows max 50 commits after clone. User can configure `depth` in the backlog.
-3. **No merge conflict UI** — if `pull` fails due to conflicts, user sees an error message. Manual resolution (edit → stage → commit) is possible but not guided. Merge UI in the backlog.
-4. **Status matrix edge cases** — renamed files, staged deletions not perfectly represented. Improve status parsing in the backlog.
-5. **CORS proxy dependency** — relies on `cors.isomorphic-git.org`. If it goes down, push/pull/clone fail. Self-host option in the backlog.
-6. **Token in memory only** — app restart loses token. expo-secure-store in the backlog.
+1. **不支持 SSH** — isomorphic-git 仅支持 HTTP 传输。解决方案：使用 HTTPS + PAT。
+2. **浅克隆（`depth: 50`）** — 克隆后历史视图最多显示 50 条提交。用户可在待办事项中配置 `depth`。
+3. **无合并冲突 UI** — 如果 `pull` 因冲突失败，用户看到错误信息。手动解决（编辑 → 暂存 → 提交）可行但无引导。合并 UI 列为待办事项。
+4. **状态矩阵边缘情况** — 重命名文件、暂存删除未完全正确表示。待办事项中改进状态解析。
+5. **CORS 代理依赖** — 依赖 `cors.isomorphic-git.org`。如代理宕机，推送/拉取/克隆将失败。待办事项中提供自托管选项。
+6. **Token 仅在内存中** — 应用重启后 Token 丢失。待办事项中使用 expo-secure-store。

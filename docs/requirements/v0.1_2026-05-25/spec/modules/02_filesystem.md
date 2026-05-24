@@ -1,27 +1,27 @@
-# Module Spec: File System
+# 模块规格说明：文件系统
 
-| Module | File System |
+| 模块 | 文件系统 |
 |---|---|
-| Files | `src/services/fileSystem.ts`, `src/services/fsAdapter.ts` |
-| Version | 0.1 |
+| 相关文件 | `src/services/fileSystem.ts`、`src/services/fsAdapter.ts` |
+| 版本 | 0.1 |
 
 ---
 
-## Responsibility
+## 职责
 
-- Abstract expo-file-system for editor operations (read, write, list, create, delete, rename)
-- Provide a POSIX-compatible `fs.promises` interface for isomorphic-git (via `fsAdapter.ts`)
-- Manage workspace root paths under `documentDirectory/workspaces/`
+- 为编辑器操作（读取、写入、列举、创建、删除、重命名）封装 expo-file-system
+- 为 isomorphic-git 提供 POSIX 兼容的 `fs.promises` 接口（通过 `fsAdapter.ts`）
+- 管理 `documentDirectory/workspaces/` 下的工作区根路径
 
 ---
 
-## Workspace Layout
+## 工作区目录结构
 
 ```
 FileSystem.documentDirectory/
   workspaces/
     my-project/
-      .git/                    ← managed by isomorphic-git via fsAdapter
+      .git/                    ← 由 isomorphic-git 通过 fsAdapter 管理
         objects/
         refs/
         HEAD
@@ -36,121 +36,121 @@ FileSystem.documentDirectory/
       ...
 ```
 
-All workspace paths are absolute URIs starting with `file:///`.
+所有工作区路径为以 `file:///` 开头的绝对 URI。
 
 ---
 
 ## fileSystem.ts API
 
 ```typescript
-// Workspace management
+// 工作区管理
 ensureWorkspaceDir(): Promise<void>
 listWorkspaces(): Promise<string[]>
-createWorkspace(name: string): Promise<string>   // returns abs path
+createWorkspace(name: string): Promise<string>   // 返回绝对路径
 
-// Directory operations
+// 目录操作
 readDirectory(dirPath: string): Promise<FileNode[]>
-  // Sorted: directories first, then files, alphabetical within each group
-  // Each FileNode: { name, path, type: 'file'|'directory' }
+  // 排序规则：目录优先，然后是文件，各组内按字母顺序排列
+  // 每个 FileNode：{ name, path, type: 'file'|'directory' }
 
-// File operations
+// 文件操作
 readFile(path: string): Promise<string>             // UTF-8
-writeFile(path: string, content: string): Promise<void>  // UTF-8, atomic
+writeFile(path: string, content: string): Promise<void>  // UTF-8，原子写入
 createFile(dirPath: string, name: string): Promise<string>
 createDirectory(dirPath: string, name: string): Promise<string>
-deleteItem(path: string): Promise<void>             // recursive if directory
+deleteItem(path: string): Promise<void>             // 目录则递归删除
 renameItem(fromPath: string, toPath: string): Promise<void>
 
-// Utility
-getLanguageFromPath(path: string): string           // ext → Monaco language ID
+// 工具函数
+getLanguageFromPath(path: string): string           // 扩展名 → Monaco 语言 ID
 ```
 
 ---
 
-## fsAdapter.ts — isomorphic-git POSIX Bridge
+## fsAdapter.ts — isomorphic-git POSIX 桥接
 
-isomorphic-git requires an object with `{ promises: { readFile, writeFile, readdir, mkdir, rmdir, stat, lstat, unlink, readlink, symlink } }`.
+isomorphic-git 需要一个包含 `{ promises: { readFile, writeFile, readdir, mkdir, rmdir, stat, lstat, unlink, readlink, symlink } }` 的对象。
 
-### Interface Contract
+### 接口契约
 
 ```typescript
 fsAdapter.promises.readFile(path, options?)
-  → If options.encoding === 'utf8': returns string
-  → Otherwise: returns Uint8Array (base64 decoded from expo-fs)
+  → 如果 options.encoding === 'utf8'：返回 string
+  → 否则：返回 Uint8Array（从 expo-fs 的 base64 解码）
 
 fsAdapter.promises.writeFile(path, data, options?)
-  → If data is string: writes UTF-8
-  → If data is Uint8Array: base64 encodes and writes
+  → 如果 data 是 string：以 UTF-8 写入
+  → 如果 data 是 Uint8Array：base64 编码后写入
 
 fsAdapter.promises.stat(path)
-  → Returns StatResult: { isFile(), isDirectory(), isSymbolicLink(), size, mode, mtimeMs, ... }
-  → Throws ENOENT if path does not exist
+  → 返回 StatResult：{ isFile(), isDirectory(), isSymbolicLink(), size, mode, mtimeMs, ... }
+  → 路径不存在时抛出 ENOENT
 
 fsAdapter.promises.lstat(path)
-  → Same as stat (no symlink support; symlinks not on iPadOS FS)
+  → 同 stat（不支持符号链接；iPadOS 文件系统无符号链接）
 
 fsAdapter.promises.readlink(path)
-  → Always throws ENOSYS (symlinks not supported)
+  → 始终抛出 ENOSYS（不支持符号链接）
 
 fsAdapter.promises.symlink(target, path)
-  → Always throws ENOSYS
+  → 始终抛出 ENOSYS
 ```
 
-### Error Codes
+### 错误码
 
-| Condition | Error code |
+| 条件 | 错误码 |
 |---|---|
-| Path does not exist | `ENOENT` |
-| Symlink operation | `ENOSYS` |
-| Permission denied (rare on iOS sandbox) | `EACCES` (propagated from expo-fs) |
+| 路径不存在 | `ENOENT` |
+| 符号链接操作 | `ENOSYS` |
+| 权限被拒（iOS 沙盒中少见） | `EACCES`（从 expo-fs 传播） |
 
-isomorphic-git checks error codes on ENOENT and ENOSYS and handles them gracefully (e.g., skips symlinks in status matrix).
+isomorphic-git 会检查 ENOENT 和 ENOSYS 错误码并优雅处理（例如在状态矩阵中跳过符号链接）。
 
 ---
 
-## Binary File Handling
+## 二进制文件处理
 
-expo-file-system encodes binary data as base64 when using `FileSystem.EncodingType.Base64`.
+expo-file-system 使用 `FileSystem.EncodingType.Base64` 对二进制数据进行 base64 编码。
 
 ```
-readFile(binary):
-  expo-fs reads as base64 string
-  → atob(base64) → binary string → Uint8Array
+readFile（二进制）:
+  expo-fs 以 base64 字符串读取
+  → atob(base64) → 二进制字符串 → Uint8Array
 
-writeFile(Uint8Array):
-  Uint8Array → binary string → btoa() → base64 string
-  → expo-fs writes as base64
+writeFile（Uint8Array）:
+  Uint8Array → 二进制字符串 → btoa() → base64 字符串
+  → expo-fs 以 base64 写入
 ```
 
-This ensures git objects (which are binary) can be stored in and read from expo-file-system.
+这确保 Git 对象（二进制格式）可以存储到 expo-file-system 并从中读取。
 
 ---
 
-## Path Handling Edge Cases
+## 路径处理边界情况
 
-1. **Trailing slash:** `readDirectory` normalizes paths: `path.endsWith('/') ? path + name : path + '/' + name`
-2. **Workspace root:** isomorphic-git `dir` param is the workspace root (no trailing slash)
-3. **Relative vs absolute:** git.ts functions accept absolute paths; isomorphic-git constructs relative paths internally
-4. **`.git` directory:** Never shown in FileTreeView (filtered by name starting with `.` in the backlog; in v0.1, shown if present — minor UX issue)
+1. **尾部斜杠：** `readDirectory` 对路径进行规范化：`path.endsWith('/') ? path + name : path + '/' + name`
+2. **工作区根目录：** isomorphic-git 的 `dir` 参数是工作区根目录（无尾部斜杠）
+3. **相对路径 vs 绝对路径：** git.ts 函数接受绝对路径；isomorphic-git 内部构建相对路径
+4. **`.git` 目录：** 在 FileTreeView 中不显示（待办事项中按名称以 `.` 开头过滤；v0.1 中如果存在则会显示——轻微 UX 问题）
 
 ---
 
-## Performance Characteristics
+## 性能特征
 
-| Operation | Typical Time | Notes |
+| 操作 | 典型耗时 | 备注 |
 |---|---|---|
-| `readDirectory` (flat, 50 files) | ~100ms | One `getInfoAsync` per entry |
-| `readFile` (10KB) | ~20ms | Single async read |
-| `writeFile` (10KB) | ~30ms | Single async write, atomic on iOS |
-| `readDirectory` recursive (500 files) | ~2-3s | Multiplied per-file stat calls |
+| `readDirectory`（平铺，50 个文件） | ~100ms | 每个条目一次 `getInfoAsync` |
+| `readFile`（10KB） | ~20ms | 单次异步读取 |
+| `writeFile`（10KB） | ~30ms | 单次异步写入，iOS 上原子操作 |
+| `readDirectory` 递归（500 个文件） | ~2-3s | 每个文件的 stat 调用叠加 |
 
-**Bottleneck:** `getInfoAsync` per file in `readDirectory`. For large repos (1000+ files), consider batching or caching in the backlog.
+**瓶颈：** `readDirectory` 中每个文件调用一次 `getInfoAsync`。对于大型仓库（1000+ 个文件），可在待办事项中考虑批量处理或缓存。
 
 ---
 
-## Known Limitations (v0.1)
+## 已知限制（v0.1）
 
-1. **`.git` directory visible in tree** — not filtered out; cosmetic issue. Fix: filter names starting with `.` (or only `.git`) in FileTreeView.
-2. **No file watcher** — changes made outside the app (e.g., git pull) require manual refresh. Auto-refresh on app foreground in the backlog.
-3. **No binary file preview** — opening an image or binary shows garbled text. Add file type check before opening in the backlog.
-4. **readDirectory is not recursive** — FileTreeView lazy-loads children on expand. Full tree not loaded upfront (good for performance, but search requires separate recursive walk).
+1. **`.git` 目录在文件树中可见** — 未过滤；外观问题。修复方案：在 FileTreeView 中过滤以 `.` 开头的名称（或仅过滤 `.git`）。
+2. **无文件监听器** — 应用外部的更改（如 git pull）需要手动刷新。待办事项：应用切换到前台时自动刷新。
+3. **无二进制文件预览** — 打开图片或二进制文件显示乱码。待办事项：打开前添加文件类型检查。
+4. **readDirectory 非递归** — FileTreeView 在展开时懒加载子目录。完整树不会一次全部加载（有利于性能，但搜索需要单独的递归遍历）。
