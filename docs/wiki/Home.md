@@ -41,8 +41,8 @@ iPad VSCode is a native iPad app that brings a VS Code-like coding experience to
 | No process execution (iOS sandbox) | Built-in terminal commands + git via isomorphic-git |
 | Monaco requires WebView | Inline HTML bridge with postMessage protocol |
 | No native symlinks | fsAdapter throws ENOSYS; isomorphic-git handles gracefully |
-| GitHub auth (no system keychain yet) | Token stored in Zustand (in-memory); persisted to app FS in future |
-| CDN dependency for Monaco | Inline HTML loads Monaco from cdnjs; offline bundle planned for v0.3 |
+| GitHub auth (no system keychain yet) | Token stored in Zustand (in-memory); iOS Keychain (expo-secure-store) planned |
+| CDN dependency for Monaco | Inline HTML loads Monaco from cdnjs; offline bundling is backlog |
 
 ---
 

@@ -131,7 +131,7 @@ This ensures git objects (which are binary) can be stored in and read from expo-
 1. **Trailing slash:** `readDirectory` normalizes paths: `path.endsWith('/') ? path + name : path + '/' + name`
 2. **Workspace root:** isomorphic-git `dir` param is the workspace root (no trailing slash)
 3. **Relative vs absolute:** git.ts functions accept absolute paths; isomorphic-git constructs relative paths internally
-4. **`.git` directory:** Never shown in FileTreeView (filtered by name starting with `.` in v0.2; in v0.1, shown if present — minor UX issue)
+4. **`.git` directory:** Never shown in FileTreeView (filtered by name starting with `.` in the backlog; in v0.1, shown if present — minor UX issue)
 
 ---
 
@@ -144,13 +144,13 @@ This ensures git objects (which are binary) can be stored in and read from expo-
 | `writeFile` (10KB) | ~30ms | Single async write, atomic on iOS |
 | `readDirectory` recursive (500 files) | ~2-3s | Multiplied per-file stat calls |
 
-**Bottleneck:** `getInfoAsync` per file in `readDirectory`. For large repos (1000+ files), consider batching or caching in v0.2.
+**Bottleneck:** `getInfoAsync` per file in `readDirectory`. For large repos (1000+ files), consider batching or caching in the backlog.
 
 ---
 
 ## Known Limitations (v0.1)
 
 1. **`.git` directory visible in tree** — not filtered out; cosmetic issue. Fix: filter names starting with `.` (or only `.git`) in FileTreeView.
-2. **No file watcher** — changes made outside the app (e.g., git pull) require manual refresh. Auto-refresh on app foreground in v0.2.
-3. **No binary file preview** — opening an image or binary shows garbled text. Add file type check before opening in v0.2.
+2. **No file watcher** — changes made outside the app (e.g., git pull) require manual refresh. Auto-refresh on app foreground in the backlog.
+3. **No binary file preview** — opening an image or binary shows garbled text. Add file type check before opening in the backlog.
 4. **readDirectory is not recursive** — FileTreeView lazy-loads children on expand. Full tree not loaded upfront (good for performance, but search requires separate recursive walk).

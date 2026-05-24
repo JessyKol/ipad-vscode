@@ -43,7 +43,7 @@ async function searchInTree(nodes, query, caseSensitive, results, maxResults = 2
 }
 ```
 
-**Limitation:** `node.children` is only populated if the directory was expanded in FileTreeView. If directories are unexpanded, their files won't be searched. **Fix:** The search should use its own recursive `readDirectory` traversal, not depend on the store's FileNode tree. This is a known bug fixed in v0.2.
+**Limitation:** `node.children` is only populated if the directory was expanded in FileTreeView. If directories are unexpanded, their files won't be searched. **Fix:** The search should use its own recursive `readDirectory` traversal, not depend on the store's FileNode tree. This is a known bug fixed in the backlog.
 
 **v0.1 workaround:** Users must expand all directories in FileTreeView before searching, or accept incomplete results.
 
@@ -94,7 +94,7 @@ Each file group shows:
 Tapping a result:
 1. Reads file content via `readFile(filePath)`
 2. Calls `openTab({ path, name, content, language })` → opens/switches to tab
-3. TODO (v0.2): post `revealLine` message to Monaco WebView to scroll to the result line
+3. TODO (backlog): post `revealLine` message to Monaco WebView to scroll to the result line
 
 ---
 
@@ -106,7 +106,7 @@ Tapping a result:
 | 200 files, ~20000 lines, simple query | ~2-3s |
 | 1000 files (large repo) | ~10-15s (unacceptable) |
 
-**v0.2 plan:** Use a web worker or background task to parallelize file reads. Or build an in-memory index on workspace open. For v0.1, 50-100 file projects are the primary target.
+**Backlog:** Use a web worker or background task to parallelize file reads. Or build an in-memory index on workspace open. For v0.1, 50-100 file projects are the primary target.
 
 ---
 
@@ -120,10 +120,10 @@ The `abortRef` mechanism ensures that if a new search starts before the old one 
 
 ## Known Limitations (v0.1)
 
-1. **Depends on expanded FileTree** — only searches files whose parent directories were expanded. Use own recursive readDirectory in v0.2.
+1. **Depends on expanded FileTree** — only searches files whose parent directories were expanded. Use own recursive readDirectory in the backlog.
 2. **First match per line only** — multiple matches on the same line show only the first one.
-3. **No regex support** — plain string search only. Regex planned for v0.2.
-4. **No replace** — read-only search. Replace planned for v0.2.
-5. **No glob include/exclude** — all text files are searched. Filter patterns planned for v0.3.
-6. **No highlighted match in result text** — match position tracked but not highlighted in the UI row. Add styled text highlight in v0.2.
-7. **No "reveal line" after navigate** — file opens but Monaco doesn't scroll to the result line. Fix in v0.2 via `postMessage({ type: 'revealLine', line })`.
+3. **No regex support** — plain string search only. Regex backlog.
+4. **No replace** — read-only search. Replace backlog.
+5. **No glob include/exclude** — all text files are searched. Filter patterns backlog.
+6. **No highlighted match in result text** — match position tracked but not highlighted in the UI row. Add styled text highlight in the backlog.
+7. **No "reveal line" after navigate** — file opens but Monaco doesn't scroll to the result line. Fix in the backlog via `postMessage({ type: 'revealLine', line })`.

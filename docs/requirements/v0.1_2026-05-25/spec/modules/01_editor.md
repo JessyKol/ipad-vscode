@@ -164,7 +164,7 @@ This allows displaying the git diff without creating a separate WebView.
 
 ## Known Limitations (v0.1)
 
-1. **Monaco loads from CDN** — requires internet. Offline loading planned for v0.3.
+1. **Monaco loads from CDN** — requires internet. Offline loading backlog.
 2. **No LSP** — IntelliSense is Monaco built-in only (no type checking, no go-to-definition across files).
-3. **postMessage latency** — ~10-30ms per message; `onDidChangeModelContent` fires on every keystroke. No debouncing in v0.1; add in v0.2 if perf issues observed.
-4. **Single WebView per tab** — each tab mounts a new WebView (key={tab.id}). This is correct but means Monaco reloads CDN on each new tab. Optimize in v0.2 with a tab-switching strategy that keeps one WebView alive.
+3. **postMessage latency** — ~10-30ms per message; `onDidChangeModelContent` fires on every keystroke. No debouncing in v0.1; add in the backlog if perf issues observed.
+4. **Single WebView per tab** — each tab mounts a new WebView (key={tab.id}). This is correct but means Monaco reloads CDN on each new tab. Optimize in the backlog with a tab-switching strategy that keeps one WebView alive.

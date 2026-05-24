@@ -30,7 +30,7 @@
 
 **Mitigation in v0.1:** None. Acceptable because iPad Pro on WiFi can load CDN assets quickly.
 
-**v0.3 plan:** Bundle Monaco locally as a pre-bundled asset or use a local HTTP server.
+**Backlog:** Bundle Monaco locally as a pre-bundled asset or use a local HTTP server.
 
 **Measurement:** Open new tab with `Date.now()` before mount and in `onMessage` handler for `ready` event.
 
@@ -44,7 +44,7 @@
 
 **Mitigation in v0.1:** Lazy-loading in FileTreeView (only loads expanded directories). The full tree is never loaded at once.
 
-**v0.2 plan:** Batch `getInfoAsync` calls using `Promise.all` (parallelise up to 50 at a time).
+**Backlog:** Batch `getInfoAsync` calls using `Promise.all` (parallelise up to 50 at a time).
 
 ---
 
@@ -54,7 +54,7 @@
 
 **Mitigation in v0.1:** `getStatus()` is only called on explicit user actions (refresh button, after git mutations). No background polling.
 
-**v0.2 plan:** Cache status; only re-compute on file system change events (when expo-file-system exposes them).
+**Backlog:** Cache status; only re-compute on file system change events (when expo-file-system exposes them).
 
 ---
 
@@ -64,7 +64,7 @@
 
 **Mitigation in v0.1:** 200-result cap prevents processing entire large repos.
 
-**v0.2 plan:** Parallel file reads with `Promise.all`, build in-memory index.
+**Backlog:** Parallel file reads with `Promise.all`, build in-memory index.
 
 ---
 
@@ -74,7 +74,7 @@
 
 **Mitigation in v0.1:** Content sync fires on every keystroke. For typical typing speed (< 10 chars/second), this is acceptable.
 
-**v0.2 plan:** Debounce `onDidChangeModelContent` with a 100ms debounce before syncing to React Native state. (Saves are still instant via ⌘S.)
+**Backlog:** Debounce `onDidChangeModelContent` with a 100ms debounce before syncing to React Native state. (Saves are still instant via ⌘S.)
 
 ---
 
@@ -90,7 +90,7 @@ iPad Pro M-series has 8-16GB RAM, but iOS kills background apps aggressively. Ap
 | isomorphic-git objects | ~5-20MB (cached .git objects) |
 | **Total (3 open tabs)** | **~100-150MB** |
 
-**Risk:** Opening 10+ large tabs could push memory over limit → iOS terminates app. Mitigation: implement tab eviction (unload content of background tabs) in v0.2.
+**Risk:** Opening 10+ large tabs could push memory over limit → iOS terminates app. Mitigation: implement tab eviction (unload content of background tabs) in the backlog.
 
 ---
 
@@ -98,7 +98,7 @@ iPad Pro M-series has 8-16GB RAM, but iOS kills background apps aggressively. Ap
 
 React Native renders on the main thread. Heavy computations should be moved off:
 
-| Operation | Where | v0.1 | v0.2 |
+| Operation | Where | v0.1 | Backlog |
 |---|---|---|---|
 | Search file traversal | JS thread | Sequential | Batch with Promise.all |
 | Diff computation (LCS) | JS thread | Sync O(mn) | Worker for large files |

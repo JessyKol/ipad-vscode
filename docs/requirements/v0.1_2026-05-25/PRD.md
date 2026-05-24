@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-iPad VSCode is a native iPad application that provides a full-featured code editing experience similar to Visual Studio Code. It targets developers who use iPad Pro as their primary or secondary computing device and need a capable, offline-capable (v0.3) editor with integrated git workflows.
+iPad VSCode is a native iPad application that provides a full-featured code editing experience similar to Visual Studio Code. It targets developers who use iPad Pro as their primary or secondary computing device and need a capable, offline-capable (backlog) editor with integrated git workflows.
 
 v0.1 establishes the foundational architecture and ships a working product covering the core loop: **open repo → browse files → edit code → commit → push**.
 
@@ -190,7 +190,7 @@ iPad Pro hardware (M-series chip, Apple Pencil, Magic Keyboard) is powerful enou
 > I want to open the app and continue where I left off,
 > so that I don't spend time re-navigating to my work.
 
-**Note:** v0.1 does NOT persist workspace between sessions (file state is in memory). This is a known gap addressed in v0.2.
+**Note:** v0.1 does NOT persist workspace between sessions (file state is in memory). This is a known gap addressed in the backlog.
 
 ---
 
@@ -234,8 +234,8 @@ iPad Pro hardware (M-series chip, Apple Pencil, Magic Keyboard) is powerful enou
 | Command palette (real) | Alert placeholder ships in v0.1; real impl v0.2 |
 | Resizable panels | Gesture handling complexity; v0.2 |
 | SSH terminal | Native module needed; v0.2 |
-| Regex search | Added to v0.2 |
-| Git merge UI | v0.2 |
+| Regex search | Backlog |
+| Git merge UI | Backlog |
 | Offline Monaco | Large asset bundling; v0.3 |
 | LSP / language server | v0.3 |
 | App Store submission | v1.0 |
@@ -246,7 +246,7 @@ iPad Pro hardware (M-series chip, Apple Pencil, Magic Keyboard) is powerful enou
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Monaco CDN unavailable | Low | High | Cache in AsyncStorage after first load (v0.2) |
+| Monaco CDN unavailable | Low | High | Cache in AsyncStorage after first load (backlog) |
 | isomorphic-git doesn't support server | Medium | Medium | Fallback error message; test with GitHub |
 | WebView postMessage latency | Low | Medium | Debounce content sync; tested at < 50ms |
 | iOS WebView CSP blocks CDN | Low | High | Meta CSP tag allows cdnjs.cloudflare.com |
@@ -258,6 +258,6 @@ iPad Pro hardware (M-series chip, Apple Pencil, Magic Keyboard) is powerful enou
 ## 10. Open Questions
 
 1. **Token security:** Should the token ever be written to disk? If yes, use expo-secure-store (Keychain). Decision deferred to v0.2.
-2. **Workspace discovery:** Should the app show a "recent workspaces" list on launch? Yes — planned for v0.2.
-3. **Monaco bundling strategy:** Bundle all 50 language workers locally (~30MB), or lazy-load on demand? Decision for v0.3 planning.
-4. **LSP approach:** Run TypeScript language server in JavaScriptCore, or use a remote LSP proxy? Both options to be prototyped in v0.3 research phase.
+2. **Workspace discovery:** Should the app show a "recent workspaces" list on launch? Yes — backlog.
+3. **Monaco bundling strategy:** Bundle all 50 language workers locally (~30MB), or lazy-load on demand? Decision backlog planning.
+4. **LSP approach:** Run TypeScript language server in JavaScriptCore, or use a remote LSP proxy? Both options to be prototyped in the backlog research phase.

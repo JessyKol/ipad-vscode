@@ -35,7 +35,7 @@ fontSize: number;        // 10-24
 ### Git Author
 - **Purpose:** Required for commit operations. isomorphic-git requires author `{ name, email }` on every commit.
 - **Validation:** None in v0.1; empty fields cause commit to fail with an Alert.
-- **Storage:** Zustand only (lost on app restart). Persist to JSON file in v0.2.
+- **Storage:** Zustand only (lost on app restart). Persist to JSON file in the backlog.
 
 ### GitHub Token
 - **Purpose:** Required for push, pull, and clone of private repos or when rate-limited.
@@ -75,7 +75,7 @@ fontSize: number;        // 10-24
 - User must re-enter git author, token, and re-open workspace on every launch
 - This is the primary UX complaint expected from v0.1
 
-**v0.2 Plan:**
+**Backlog:**
 ```typescript
 // Use expo-secure-store for token (Keychain-backed):
 import * as SecureStore from 'expo-secure-store';
@@ -114,9 +114,9 @@ Theme → Monaco theme mapping:
 
 ## Known Limitations (v0.1)
 
-1. **No persistence** — all settings reset on app restart. Fix in v0.2.
-2. **No input validation** — invalid email format accepted; will cause git author to be malformed. Add validation in v0.2.
-3. **Token security** — in-memory only; Keychain storage in v0.2.
-4. **Clone runs on UI thread** — large repos may cause the UI to feel sluggish during clone. Move to background task in v0.2.
-5. **No custom keybindings** — keyboard shortcuts are hardcoded in Monaco HTML. User-configurable bindings in v0.3.
-6. **No font family selection** — Menlo is hardcoded. Add system monospace font picker in v0.2.
+1. **No persistence** — all settings reset on app restart. Fix in the backlog.
+2. **No input validation** — invalid email format accepted; will cause git author to be malformed. Add validation in the backlog.
+3. **Token security** — in-memory only; Keychain storage in the backlog.
+4. **Clone runs on UI thread** — large repos may cause the UI to feel sluggish during clone. Move to background task in the backlog.
+5. **No custom keybindings** — keyboard shortcuts are hardcoded in Monaco HTML. User-configurable bindings in the backlog.
+6. **No font family selection** — Menlo is hardcoded. Add system monospace font picker in the backlog.

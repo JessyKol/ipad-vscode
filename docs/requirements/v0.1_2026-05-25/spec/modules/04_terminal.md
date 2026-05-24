@@ -20,10 +20,10 @@ Provide an interactive terminal panel with built-in commands and git operations.
 | bash / zsh shell | ❌ Not possible (no process execution) |
 | npm install, pip install | ❌ Not possible |
 | Run Python scripts | ❌ Not possible (no interpreter) |
-| Run JavaScript | ⚠️ Possible via JavaScriptCore (v0.2) |
+| Run JavaScript | ⚠️ Possible via JavaScriptCore (backlog) |
 | Git operations | ✅ Via isomorphic-git (pure JS) |
 | File system navigation | ✅ Via expo-file-system |
-| SSH to remote server | 📋 v0.2 via WebSocket/native module |
+| SSH to remote server | 📋 backlog via WebSocket/native module |
 
 The terminal is honest about this. Unknown commands show: `command not found (type "help" for available commands)`.
 
@@ -130,7 +130,7 @@ Note: `onKeyPress` works on iOS with hardware keyboard. Arrow keys are reported 
 
 ## State Management
 
-Terminal state is **local** to `TerminalView` (not in Zustand). Rationale: terminal output is ephemeral; it doesn't need to persist across app restarts or be shared with other components. If multiple terminal tabs are added in v0.3, state should move to a `terminalSessions[]` in the store.
+Terminal state is **local** to `TerminalView` (not in Zustand). Rationale: terminal output is ephemeral; it doesn't need to persist across app restarts or be shared with other components. If multiple terminal tabs are added in the backlog, state should move to a `terminalSessions[]` in the store.
 
 ---
 
@@ -145,9 +145,9 @@ Async commands (git push, git pull, git commit, git clone) set `loading = true`.
 
 ## Known Limitations (v0.1)
 
-1. **No tab completion** — pressing Tab does nothing. Basic completion (file names) planned for v0.2.
+1. **No tab completion** — pressing Tab does nothing. Basic completion (file names) backlog.
 2. **`cat` truncates at 100 lines** — prevents terminal overflow for large files.
 3. **`ls` is not recursive** — flat listing only.
 4. **No pipe / redirect** — this is not a shell; commands are dispatched directly.
 5. **History is lost on component unmount** — if terminal is hidden and re-shown, history is preserved (component stays mounted). If app is killed, history is lost. Acceptable for v0.1.
-6. **`git log` output is plain text** — no ANSI colour (the `\x1b[33m` codes in the code are actually not rendered in RN's Text component; they appear as raw escape sequences). Fix in v0.2 by implementing basic ANSI parser.
+6. **`git log` output is plain text** — no ANSI colour (the `\x1b[33m` codes in the code are actually not rendered in RN's Text component; they appear as raw escape sequences). Fix in the backlog by implementing basic ANSI parser.

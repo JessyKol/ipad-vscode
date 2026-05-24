@@ -153,10 +153,10 @@ fsAdapter (src/services/fsAdapter.ts)
 ## Key Design Decisions
 
 ### D1: Monaco via WebView (not native)
-Monaco has no React Native port. The WebView bridge adds ~10ms latency for content sync but gives full Monaco capabilities including IntelliSense, diff editor, and 50+ language grammars.
+Monaco has no React Native port. The WebView bridge adds ~10-30ms latency for content sync but gives full Monaco capabilities including IntelliSense, diff editor, and 50+ language grammars.
 
 ### D2: Inline HTML instead of bundled asset
-Using `source={{ html: MONACO_HTML }}` works on both iOS and Android without platform-specific asset paths. Trade-off: Monaco still loads from CDN (requires network); offline support is a v0.3 goal.
+Using `source={{ html: MONACO_HTML }}` works on both iOS and Android without platform-specific asset paths. Trade-off: Monaco still loads from CDN (requires network); offline support is a backlog item.
 
 ### D3: expo-file-system as the single FS
 Unified FS via `fsAdapter` ensures git objects and working files coexist in the same directory tree. Previous architecture (LightningFS + expo-fs) was completely split — git had no visibility into edited files.

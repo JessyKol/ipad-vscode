@@ -83,7 +83,7 @@ stage !== head      → staged changes
 workdir !== head    → unstaged changes (when stage === head)
 ```
 
-Our `getStatus()` simplifies to three buckets. This covers 95% of workflows. Edge cases (renamed, deleted-staged, etc.) show up in "staged" with potentially wrong badges — improvement for v0.2.
+Our `getStatus()` simplifies to three buckets. This covers 95% of workflows. Edge cases (renamed, deleted-staged, etc.) show up in "staged" with potentially wrong badges — improvement backlog.
 
 ---
 
@@ -132,7 +132,7 @@ To show HEAD vs working tree diff:
 ```
 O(m × n) time and space (m = old lines, n = new lines)
 Practical limit: ~2000-line files compute in < 100ms on M-series iPad
-For files > 5000 lines, consider paginating or using a diff WASM module (v0.3)
+For files > 5000 lines, consider paginating or using a diff WASM module (backlog)
 ```
 
 Output line types: `add` (green), `del` (red), `ctx` (unchanged, shown as context).
@@ -149,7 +149,7 @@ checkoutBranch(dir, ref) → git.checkout({ ref })
 
 **After any checkout:** Must call `getCurrentBranch(dir)` and update store's `activeBranch`.
 
-**Remote branches:** Not shown in v0.1. `git.listRemoteBranches` available in isomorphic-git for v0.2.
+**Remote branches:** Not shown in v0.1. `git.listRemoteBranches` available in isomorphic-git backlog.
 
 ---
 
@@ -174,7 +174,7 @@ try {
 }
 ```
 
-**Important:** Error messages from isomorphic-git are shown directly to users. They are technical but usually actionable. Improve error messaging in v0.2 (map common errors to human-readable messages).
+**Important:** Error messages from isomorphic-git are shown directly to users. They are technical but usually actionable. Improve error messaging in the backlog (map common errors to human-readable messages).
 
 ---
 
@@ -192,15 +192,15 @@ setGitStatus(status);
 setActiveBranch(branch ?? 'HEAD');
 ```
 
-This is enforced by convention; could be encapsulated into a `useGitOps` hook in v0.2.
+This is enforced by convention; could be encapsulated into a `useGitOps` hook in the backlog.
 
 ---
 
 ## Known Limitations (v0.1)
 
 1. **SSH not supported** — isomorphic-git HTTP transport only. Workaround: use HTTPS with PAT.
-2. **Shallow clone (`depth: 50`)** — history view shows max 50 commits after clone. User can configure `depth` in v0.2.
-3. **No merge conflict UI** — if `pull` fails due to conflicts, user sees an error message. Manual resolution (edit → stage → commit) is possible but not guided. Merge UI in v0.2.
-4. **Status matrix edge cases** — renamed files, staged deletions not perfectly represented. Improve status parsing in v0.2.
-5. **CORS proxy dependency** — relies on `cors.isomorphic-git.org`. If it goes down, push/pull/clone fail. Self-host option in v0.3.
-6. **Token in memory only** — app restart loses token. expo-secure-store in v0.2.
+2. **Shallow clone (`depth: 50`)** — history view shows max 50 commits after clone. User can configure `depth` in the backlog.
+3. **No merge conflict UI** — if `pull` fails due to conflicts, user sees an error message. Manual resolution (edit → stage → commit) is possible but not guided. Merge UI in the backlog.
+4. **Status matrix edge cases** — renamed files, staged deletions not perfectly represented. Improve status parsing in the backlog.
+5. **CORS proxy dependency** — relies on `cors.isomorphic-git.org`. If it goes down, push/pull/clone fail. Self-host option in the backlog.
+6. **Token in memory only** — app restart loses token. expo-secure-store in the backlog.

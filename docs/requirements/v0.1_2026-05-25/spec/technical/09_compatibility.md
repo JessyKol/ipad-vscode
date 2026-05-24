@@ -43,7 +43,7 @@ Keyboard shortcuts (⌘S, ⌘P, etc.) require a hardware keyboard.
 Monaco receives hardware keyboard events when the WebView is focused. The `editor.addCommand()` API uses Monaco's key binding system which maps to actual key events.
 
 ### ⌘ Key on Non-Apple Keyboards
-On third-party keyboards, `Cmd` may not be present. iOS maps `Ctrl` on third-party keyboards to `Cmd` for many shortcuts. Testing with a non-Apple keyboard is recommended for v0.2.
+On third-party keyboards, `Cmd` may not be present. iOS maps `Ctrl` on third-party keyboards to `Cmd` for many shortcuts. Testing with a non-Apple keyboard is recommended backlog.
 
 ---
 
@@ -55,7 +55,7 @@ On third-party keyboards, `Cmd` may not be present. iOS maps `Ctrl` on third-par
 | 11" | 2388×1668 | 300px | 240px | Sidebar slightly tight |
 | Air 11" | 2360×1640 | 300px | 240px | Similar to 11" Pro |
 
-**v0.1 limitation:** All dimensions are hardcoded constants in `app/index.tsx`. Resizable panels planned for v0.2.
+**v0.1 limitation:** All dimensions are hardcoded constants in `app/index.tsx`. Resizable panels backlog.
 
 ---
 
@@ -68,7 +68,7 @@ On third-party keyboards, `Cmd` may not be present. iOS maps `Ctrl` on third-par
 | Split View (33%) | ⚠️ | Very tight; sidebar hidden helps |
 | Slide Over | ⚠️ | Very narrow; not tested |
 
-**v0.2 plan:** Detect window size changes and hide sidebar automatically when window width < 600px.
+**Backlog:** Detect window size changes and hide sidebar automatically when window width < 600px.
 
 ---
 
@@ -113,7 +113,7 @@ These enable:
 - Sharing the app's Documents folder via Files.app
 - Opening files directly in the app from Files.app
 
-**v0.2 addition:** `NSPhotoLibraryUsageDescription` if image import is added.
+**Backlog addition:** `NSPhotoLibraryUsageDescription` if image import is added.
 
 ---
 

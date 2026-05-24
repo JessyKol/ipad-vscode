@@ -35,7 +35,7 @@ iPad VSCode operates in a single-user, on-device context. Primary threats:
 - Token lives in the JS heap and could theoretically be inspected if device is compromised (jailbroken)
 - Token is lost on app restart (users must re-enter it)
 
-**v0.2 Plan:** Migrate to `expo-secure-store` which uses iOS Keychain:
+**Backlog:** Migrate to `expo-secure-store` which uses iOS Keychain:
 ```typescript
 await SecureStore.setItemAsync('github_token', token, {
   keychainAccessible: SecureStore.WHEN_UNLOCKED,
@@ -56,7 +56,7 @@ Monaco runs in a WKWebView (iOS). The inline HTML includes a Content Security Po
 
 **Current CSP is permissive** — required because Monaco uses dynamic script loading internally.
 
-**v0.2 plan:** Tighten CSP when Monaco is bundled locally:
+**Backlog:** Tighten CSP when Monaco is bundled locally:
 ```
 default-src 'none';
 script-src 'self' 'unsafe-eval';  ← Monaco needs eval for language workers
@@ -83,7 +83,7 @@ This is a trusted, open-source CORS proxy operated by the isomorphic-git project
 
 **Risk:** If the proxy is compromised, tokens could be captured.
 
-**Mitigation in v0.2:** Self-host the CORS proxy, or use a proxy endpoint on the user's own server. Alternatively, for GitHub specifically, use the Octokit REST API (no CORS proxy needed) for push/pull.
+**Mitigation in the backlog:** Self-host the CORS proxy, or use a proxy endpoint on the user's own server. Alternatively, for GitHub specifically, use the Octokit REST API (no CORS proxy needed) for push/pull.
 
 ### Certificate Pinning
 Not implemented in v0.1. iOS enforces ATS (App Transport Security) which requires valid TLS certificates. This provides baseline protection against MITM on trusted networks.
@@ -99,7 +99,7 @@ The app operates within iOS app sandbox (`Documents/`). It cannot access files o
 `expo-file-system`'s `writeAsStringAsync` is atomic on iOS (uses NSFileManager write-to-temp-then-rename pattern). A crash mid-write leaves either the old file or the new file intact, not a corrupt partial write.
 
 ### Path Traversal
-User-provided inputs (workspace name, file name, rename target) are not sanitised against path traversal attacks (`../../etc/passwd`). On iOS, this is low risk because the sandbox prevents access outside `Documents/`. Still, add basic path validation in v0.2:
+User-provided inputs (workspace name, file name, rename target) are not sanitised against path traversal attacks (`../../etc/passwd`). On iOS, this is low risk because the sandbox prevents access outside `Documents/`. Still, add basic path validation in the backlog:
 ```typescript
 function sanitizeName(name: string): string {
   return name.replace(/[/\\:*?"<>|.]/g, '_').slice(0, 255);
