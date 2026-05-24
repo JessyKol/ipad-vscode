@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { EditorTab, FileNode, GitStatus, SidebarPanel, Theme } from '../types';
+import type { EditorTab, FileNode, GitSettings, GitStatus, SidebarPanel, Theme } from '../types';
 
 type EditorStore = {
   tabs: EditorTab[];
@@ -7,10 +7,12 @@ type EditorStore = {
   fileTree: FileNode[];
   currentWorkspace: string | null;
   gitStatus: GitStatus;
+  activeBranch: string;
   sidebarPanel: SidebarPanel;
   sidebarVisible: boolean;
   theme: Theme;
   fontSize: number;
+  gitSettings: GitSettings;
 
   openTab: (tab: Omit<EditorTab, 'id'>) => void;
   closeTab: (id: string) => void;
@@ -20,10 +22,12 @@ type EditorStore = {
   setFileTree: (nodes: FileNode[]) => void;
   setWorkspace: (path: string | null) => void;
   setGitStatus: (status: GitStatus) => void;
+  setActiveBranch: (branch: string) => void;
   setSidebarPanel: (panel: SidebarPanel) => void;
   toggleSidebar: () => void;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: number) => void;
+  setGitSettings: (settings: Partial<GitSettings>) => void;
 };
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
@@ -32,10 +36,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   fileTree: [],
   currentWorkspace: null,
   gitStatus: { staged: [], unstaged: [], untracked: [] },
+  activeBranch: '',
   sidebarPanel: 'files',
   sidebarVisible: true,
   theme: 'vs-dark',
   fontSize: 14,
+  gitSettings: { authorName: '', authorEmail: '', token: '' },
 
   openTab: (tab) => {
     const existing = get().tabs.find((t) => t.path === tab.path);
@@ -44,10 +50,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       return;
     }
     const id = `${Date.now()}-${tab.path}`;
-    set((s) => ({
-      tabs: [...s.tabs, { ...tab, id }],
-      activeTabId: id,
-    }));
+    set((s) => ({ tabs: [...s.tabs, { ...tab, id }], activeTabId: id }));
   },
 
   closeTab: (id) => {
@@ -76,8 +79,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   setFileTree: (nodes) => set({ fileTree: nodes }),
   setWorkspace: (path) => set({ currentWorkspace: path }),
   setGitStatus: (status) => set({ gitStatus: status }),
+  setActiveBranch: (branch) => set({ activeBranch: branch }),
   setSidebarPanel: (panel) => set({ sidebarPanel: panel }),
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   setTheme: (theme) => set({ theme }),
   setFontSize: (size) => set({ fontSize: size }),
+  setGitSettings: (settings) =>
+    set((s) => ({ gitSettings: { ...s.gitSettings, ...settings } })),
 }));

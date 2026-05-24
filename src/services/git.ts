@@ -1,9 +1,7 @@
 import git from 'isomorphic-git';
 import http from 'isomorphic-git/http/web';
-import LightningFS from 'lightning-fs';
 import type { GitCommit, GitStatus } from '../types';
-
-const fs = new LightningFS('ipad-vscode-fs');
+import { expoFs as fs } from './fsAdapter';
 
 export { fs };
 
@@ -19,6 +17,7 @@ export async function cloneRepo(url: string, dir: string, token?: string): Promi
     url,
     singleBranch: true,
     depth: 50,
+    corsProxy: 'https://cors.isomorphic-git.org',
     onAuth: token ? () => ({ username: token, password: '' }) : undefined,
   });
 }
@@ -61,22 +60,35 @@ export async function commit(
   return git.commit({ fs, dir, message, author });
 }
 
-export async function push(dir: string, token: string): Promise<void> {
+export async function push(
+  dir: string,
+  token: string,
+  remote = 'origin',
+  branch?: string
+): Promise<void> {
   await git.push({
     fs,
     http,
     dir,
+    remote,
+    remoteRef: branch,
+    corsProxy: 'https://cors.isomorphic-git.org',
     onAuth: () => ({ username: token, password: '' }),
   });
 }
 
-export async function pull(dir: string, token?: string): Promise<void> {
+export async function pull(
+  dir: string,
+  author: { name: string; email: string },
+  token?: string
+): Promise<void> {
   await git.pull({
     fs,
     http,
     dir,
+    corsProxy: 'https://cors.isomorphic-git.org',
     onAuth: token ? () => ({ username: token, password: '' }) : undefined,
-    author: { name: 'iPad VSCode', email: 'ipad@vscode.local' },
+    author,
   });
 }
 
@@ -92,7 +104,11 @@ export async function createBranch(dir: string, ref: string): Promise<void> {
   await git.branch({ fs, dir, ref, checkout: true });
 }
 
-export async function getLog(dir: string, depth = 20): Promise<GitCommit[]> {
+export async function checkoutBranch(dir: string, ref: string): Promise<void> {
+  await git.checkout({ fs, dir, ref });
+}
+
+export async function getLog(dir: string, depth = 30): Promise<GitCommit[]> {
   const commits = await git.log({ fs, dir, depth });
   return commits.map((c) => ({
     oid: c.oid,
@@ -102,18 +118,17 @@ export async function getLog(dir: string, depth = 20): Promise<GitCommit[]> {
   }));
 }
 
-export async function getDiff(dir: string, filepath: string): Promise<string> {
+export async function getHeadContent(dir: string, filepath: string): Promise<string> {
   try {
     const [head] = await git.log({ fs, dir, depth: 1 });
     if (!head) return '';
-    const headContent = await git.readBlob({
-      fs,
-      dir,
-      oid: head.oid,
-      filepath,
-    });
-    return new TextDecoder().decode(headContent.blob);
+    const { blob } = await git.readBlob({ fs, dir, oid: head.oid, filepath });
+    return new TextDecoder().decode(blob);
   } catch {
     return '';
   }
+}
+
+export async function getRemotes(dir: string): Promise<Array<{ remote: string; url: string }>> {
+  return git.listRemotes({ fs, dir });
 }

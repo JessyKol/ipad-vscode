@@ -3,7 +3,9 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useEditorStore } from '../../store/editorStore';
 
-export default function EditorTabs() {
+type Props = { onSave?: () => void };
+
+export default function EditorTabs({ onSave }: Props) {
   const { tabs, activeTabId, setActiveTab, closeTab } = useEditorStore();
 
   if (tabs.length === 0) return null;
@@ -20,8 +22,11 @@ export default function EditorTabs() {
               onPress={() => setActiveTab(tab.id)}
               activeOpacity={0.8}
             >
+              {tab.isDirty && (
+                <View style={styles.dirtyDot} />
+              )}
               <Text style={[styles.tabName, isActive && styles.tabNameActive]} numberOfLines={1}>
-                {tab.isDirty ? '● ' : ''}{tab.name}
+                {tab.name}
               </Text>
               <TouchableOpacity
                 style={styles.closeBtn}
@@ -29,8 +34,8 @@ export default function EditorTabs() {
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Ionicons
-                  name="close"
-                  size={14}
+                  name={tab.isDirty ? 'ellipse' : 'close'}
+                  size={tab.isDirty ? 8 : 14}
                   color={isActive ? '#cccccc' : '#858585'}
                 />
               </TouchableOpacity>
@@ -38,6 +43,11 @@ export default function EditorTabs() {
           );
         })}
       </ScrollView>
+      {onSave && (
+        <TouchableOpacity style={styles.saveBtn} onPress={onSave}>
+          <Ionicons name="save-outline" size={16} color="#858585" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -48,6 +58,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#252526',
     borderBottomWidth: 1,
     borderBottomColor: '#1e1e1e',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   scroll: { flex: 1 },
   tab: {
@@ -60,11 +72,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d2d2d',
     minWidth: 100,
     maxWidth: 180,
+    gap: 6,
   },
   tabActive: {
     backgroundColor: '#1e1e1e',
     borderTopWidth: 1,
     borderTopColor: '#007acc',
+  },
+  dirtyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#cccccc',
   },
   tabName: {
     flex: 1,
@@ -74,11 +93,18 @@ const styles = StyleSheet.create({
   },
   tabNameActive: { color: '#ffffff' },
   closeBtn: {
-    marginLeft: 6,
     width: 16,
     height: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 3,
+  },
+  saveBtn: {
+    width: 36,
+    height: 35,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderLeftWidth: 1,
+    borderLeftColor: '#3c3c3c',
   },
 });

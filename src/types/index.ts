@@ -4,6 +4,7 @@ export type FileNode = {
   type: 'file' | 'directory';
   children?: FileNode[];
   isExpanded?: boolean;
+  gitStatus?: 'M' | 'A' | 'U' | 'D'; // modified / added / untracked / deleted
 };
 
 export type EditorTab = {
@@ -33,13 +34,28 @@ export type GitRemote = {
   url: string;
 };
 
+export type GitSettings = {
+  authorName: string;
+  authorEmail: string;
+  token: string;
+};
+
 export type Theme = 'vs-dark' | 'vs-light' | 'hc-black';
 
-export type SidebarPanel = 'files' | 'git' | 'search' | 'extensions';
+export type SidebarPanel = 'files' | 'git' | 'search' | 'settings';
 
 export type TerminalSession = {
   id: string;
   title: string;
   type: 'local' | 'ssh';
   host?: string;
+};
+
+export type SearchResult = {
+  file: string;
+  filePath: string;
+  line: number;
+  text: string;
+  matchStart: number;
+  matchEnd: number;
 };

@@ -6,24 +6,33 @@ import { useEditorStore } from '../store/editorStore';
 type Props = {
   line?: number;
   column?: number;
+  onBranchPress?: () => void;
 };
 
-export default function StatusBar({ line, column }: Props) {
-  const { tabs, activeTabId, currentWorkspace, gitStatus } = useEditorStore();
+export default function StatusBar({ line, column, onBranchPress }: Props) {
+  const { tabs, activeTabId, gitStatus, activeBranch, setSidebarPanel } = useEditorStore();
   const activeTab = tabs.find((t) => t.id === activeTabId);
   const totalChanges = gitStatus.staged.length + gitStatus.unstaged.length + gitStatus.untracked.length;
 
   return (
     <View style={styles.bar}>
       <View style={styles.left}>
-        <TouchableOpacity style={styles.item}>
-          <Ionicons name="git-branch" size={12} color="#cccccc" />
-          <Text style={styles.text}>main</Text>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => { setSidebarPanel('git'); onBranchPress?.(); }}
+        >
+          <Ionicons name="git-branch" size={12} color="#ffffff" />
+          <Text style={styles.text}>{activeBranch || 'main'}</Text>
         </TouchableOpacity>
         {totalChanges > 0 && (
-          <TouchableOpacity style={styles.item}>
-            <Ionicons name="alert-circle" size={12} color="#cccccc" />
-            <Text style={styles.text}>{totalChanges} change{totalChanges > 1 ? 's' : ''}</Text>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => setSidebarPanel('git')}
+          >
+            <Ionicons name="alert-circle" size={12} color="#ffffff" />
+            <Text style={styles.text}>
+              {totalChanges} change{totalChanges > 1 ? 's' : ''}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
