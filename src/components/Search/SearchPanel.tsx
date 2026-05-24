@@ -18,17 +18,19 @@ async function searchInTree(
   query: string,
   caseSensitive: boolean,
   results: SearchResult[],
+  abort: { cancelled: boolean },
   maxResults = 200
 ): Promise<void> {
   for (const node of nodes) {
-    if (results.length >= maxResults) return;
+    if (abort.cancelled || results.length >= maxResults) return;
     if (node.type === 'file') {
       try {
         const content = await readFile(node.path);
+        if (abort.cancelled) return;
         const lines = content.split('\n');
         const q = caseSensitive ? query : query.toLowerCase();
         for (let i = 0; i < lines.length; i++) {
-          if (results.length >= maxResults) return;
+          if (abort.cancelled || results.length >= maxResults) return;
           const lineText = lines[i];
           const searchIn = caseSensitive ? lineText : lineText.toLowerCase();
           const idx = searchIn.indexOf(q);
@@ -45,7 +47,7 @@ async function searchInTree(
         }
       } catch {}
     } else if (node.children) {
-      await searchInTree(node.children, query, caseSensitive, results, maxResults);
+      await searchInTree(node.children, query, caseSensitive, results, abort, maxResults);
     }
   }
 }
@@ -57,22 +59,23 @@ export default function SearchPanel() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const abortRef = useRef(false);
+  const abortRef = useRef<{ cancelled: boolean } | null>(null);
 
   const runSearch = useCallback(async (q: string) => {
     if (!q.trim() || fileTree.length === 0) return;
-    abortRef.current = true;
-    await new Promise((r) => setTimeout(r, 0));
-    abortRef.current = false;
+    // Cancel any in-flight search before starting a new one
+    if (abortRef.current) abortRef.current.cancelled = true;
+    const token = { cancelled: false };
+    abortRef.current = token;
     setLoading(true);
     setResults([]);
     setSearched(true);
     const found: SearchResult[] = [];
     try {
-      await searchInTree(fileTree, q, caseSensitive, found);
-      setResults(found);
+      await searchInTree(fileTree, q, caseSensitive, found, token);
+      if (!token.cancelled) setResults(found);
     } finally {
-      setLoading(false);
+      if (!token.cancelled) setLoading(false);
     }
   }, [fileTree, caseSensitive]);
 

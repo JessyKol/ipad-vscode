@@ -212,7 +212,6 @@ export default function TerminalView() {
         }
 
         if (sub === 'checkout') {
-          const { checkoutBranch } = await import('../../services/git');
           const target = args[1];
           if (!target) { append('Usage: git checkout <branch>', 'error'); break; }
           await checkoutBranch(dir, target);

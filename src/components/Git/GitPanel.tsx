@@ -60,7 +60,14 @@ export default function GitPanel() {
   const handleStageAll = useCallback(async () => {
     if (!currentWorkspace) return;
     setLoading(true);
-    try { await stageAll(currentWorkspace); await refresh(); } finally { setLoading(false); }
+    try {
+      await stageAll(currentWorkspace);
+      await refresh();
+    } catch (e: any) {
+      Alert.alert('Stage failed', e.message);
+    } finally {
+      setLoading(false);
+    }
   }, [currentWorkspace, refresh]);
 
   const handleCommit = useCallback(async () => {
@@ -273,7 +280,10 @@ export default function GitPanel() {
                 name={f}
                 statusChar="A"
                 statusColor="#4ec9b0"
-                onPress={async () => { await unstageFile(currentWorkspace, f); refresh(); }}
+                onPress={async () => {
+                  try { await unstageFile(currentWorkspace, f); refresh(); }
+                  catch (e: any) { Alert.alert('Unstage failed', e.message); }
+                }}
                 onDiff={() => { setDiffFile(f); setView('diff'); }}
                 action="Unstage"
               />
@@ -289,7 +299,10 @@ export default function GitPanel() {
                 name={f}
                 statusChar="M"
                 statusColor="#e9c46a"
-                onPress={async () => { await stageFile(currentWorkspace, f); refresh(); }}
+                onPress={async () => {
+                  try { await stageFile(currentWorkspace, f); refresh(); }
+                  catch (e: any) { Alert.alert('Stage failed', e.message); }
+                }}
                 onDiff={() => { setDiffFile(f); setView('diff'); }}
                 action="Stage"
               />
@@ -305,7 +318,10 @@ export default function GitPanel() {
                 name={f}
                 statusChar="U"
                 statusColor="#858585"
-                onPress={async () => { await stageFile(currentWorkspace, f); refresh(); }}
+                onPress={async () => {
+                  try { await stageFile(currentWorkspace, f); refresh(); }
+                  catch (e: any) { Alert.alert('Stage failed', e.message); }
+                }}
                 action="Stage"
               />
             ))}
